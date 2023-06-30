@@ -1,15 +1,9 @@
 import * as React from 'react'
 
-import { Chip, Box, Grid, Table, TableBody, Checkbox, Paper, TableCell, TableRow, TableContainer, TablePagination } from '@mui/material'
+import { Box, Table, TableBody, Paper, TableCell, TableRow, TableContainer, TablePagination } from '@mui/material'
 import { ChatLogsTableHead } from './ChatLogsTableHead'
 import { ChatLogsTableToolbar } from './ChatLogsTableToolbar'
-import ThumbUpIcon from '@mui/icons-material/ThumbUp'
-import ThumbDownIcon from '@mui/icons-material/ThumbDown'
-import TextsmsIcon from '@mui/icons-material/Textsms'
-import VisibilityIcon from '@mui/icons-material/Visibility'
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
-import ForumIcon from '@mui/icons-material/Forum'
-import { ChatLogDetails } from '../ChatLogDetails'
+import { ChatLogsTableRow } from './ChatLogsTableRow'
 
 function descendingComparator(a, b, orderBy) {
     if (b[orderBy] < a[orderBy]) {
@@ -47,7 +41,6 @@ export default function ChatLogsTable() {
     const [selected, setSelected] = React.useState([])
     const [page, setPage] = React.useState(0)
     const [rowsPerPage, setRowsPerPage] = React.useState(5)
-    const [logDetails, setLogDetails] = React.useState(null)
 
     const handleRequestSort = (event, property) => {
         const isAsc = orderBy === property && order === 'asc'
@@ -64,7 +57,7 @@ export default function ChatLogsTable() {
         setSelected([])
     }
 
-    const handleClick = (event, id) => {
+    const onToggleSelection = (event, id) => {
         event.stopPropagation()
         const selectedIndex = selected.indexOf(id)
         let newSelected = []
@@ -81,13 +74,6 @@ export default function ChatLogsTable() {
 
         setSelected(newSelected)
     }
-
-    const onClickRow = (event, log) => {
-        event.stopPropagation()
-        setLogDetails(log)
-    }
-
-    const onCloseDetailsWindow = () => setLogDetails(null)
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage)
@@ -124,50 +110,14 @@ export default function ChatLogsTable() {
                                 rowCount={rows.length}
                             />
                             <TableBody>
-                                {visibleRows.map((row, index) => {
-                                    const isItemSelected = isSelected(row.id)
-                                    const labelId = `enhanced-table-checkbox-${index}`
-
-                                    return (
-                                        <TableRow
-                                            hover
-                                            onClick={(event) => onClickRow(event, row)}
-                                            role='checkbox'
-                                            aria-checked={isItemSelected}
-                                            tabIndex={-1}
-                                            key={row.id}
-                                            selected={isItemSelected}
-                                            sx={{ cursor: 'pointer' }}
-                                        >
-                                            <TableCell padding='checkbox'>
-                                                <Checkbox
-                                                    onClick={(event) => handleClick(event, row.id)}
-                                                    color='primary'
-                                                    checked={isItemSelected}
-                                                    inputProps={{
-                                                        'aria-labelledby': labelId
-                                                    }}
-                                                />
-                                            </TableCell>
-                                            <TableCell component='th' id={labelId} scope='row'>
-                                                <Grid marginBottom='4px'>
-                                                    <Chip label='Q: ' /> {row?.text?.question}
-                                                </Grid>
-                                                <Grid>
-                                                    <Chip label='A: ' /> {row?.text?.answer}
-                                                </Grid>
-                                            </TableCell>
-                                            <TableCell align='center'>
-                                                {row?.quality?.thumbsUp && <ThumbUpIcon color='success' />}
-                                                {row?.quality?.thumbsDown && <ThumbDownIcon color='error' />}
-                                                {!!row?.quality?.text && <TextsmsIcon />}
-                                            </TableCell>
-                                            <TableCell align='right'>
-                                                {row?.visability ? <VisibilityIcon /> : <VisibilityOffIcon />}
-                                            </TableCell>
-                                        </TableRow>
-                                    )
-                                })}
+                                {visibleRows.map((item) => (
+                                    <ChatLogsTableRow
+                                        key={item.id}
+                                        data={item}
+                                        isItemSelected={isSelected(item.id)}
+                                        onToggleSelection={onToggleSelection}
+                                    />
+                                ))}
                                 {emptyRows > 0 && (
                                     <TableRow
                                         style={{
@@ -191,8 +141,6 @@ export default function ChatLogsTable() {
                     />
                 </Paper>
             </Box>
-
-            <ChatLogDetails details={logDetails} onClose={onCloseDetailsWindow} />
         </>
     )
 }
@@ -211,8 +159,7 @@ const rows = [
             text: 'Dolor fringilla'
         },
         inputs: 'Phasellus sed viverra mi',
-        context: 'Ut vel at commodo dolor fringilla sodales',
-        visability: true
+        context: 'Ut vel at commodo dolor fringilla sodales'
     },
     {
         id: 11,
@@ -226,8 +173,7 @@ const rows = [
             text: null
         },
         inputs: 'Phasellus sed viverra mi',
-        context: 'Ut vel magna at justo ullamcorper sodales',
-        visability: true
+        context: 'Ut vel magna at justo ullamcorper sodales'
     },
     {
         id: 13,
@@ -242,7 +188,6 @@ const rows = [
             text: 'At commodo dolor fringilla'
         },
         inputs: 'Phasellus sed viverra mi',
-        context: 'Ut vel magna at justo ullamcorper sodales',
-        visability: false
+        context: 'Ut vel magna at justo ullamcorper sodales'
     }
 ]
