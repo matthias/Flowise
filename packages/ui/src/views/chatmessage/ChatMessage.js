@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 import socketIOClient from 'socket.io-client'
-import { cloneDeep } from 'lodash'
+import { cloneDeep, includes as lodashIncludes } from 'lodash'
 import rehypeMathjax from 'rehype-mathjax'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
@@ -178,11 +178,12 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
             const loadedMessages = []
             for (const message of getChatmessageApi.data) {
                 const obj = {
+                    id: message.id,
                     message: message.content,
                     type: message.role
                 }
                 if (message.sourceDocuments) obj.sourceDocuments = JSON.parse(message.sourceDocuments)
-                loadedMessages.push(obj)
+                if (messages && !lodashIncludes(messages, message.id)) loadedMessages.push(obj) // prevent to duplicate messages
             }
             setMessages((prevMessages) => [...prevMessages, ...loadedMessages])
         }
@@ -265,7 +266,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                                         sx={{
                                             background: message.type === 'apiMessage' ? theme.palette.asyncSelect.main : ''
                                         }}
-                                        key={index}
+                                        key={message.id}
                                         style={{ display: 'flex' }}
                                         className={
                                             message.type === 'userMessage' && loading && index === messages.length - 1
