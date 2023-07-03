@@ -20,64 +20,62 @@ export function ChatLogDetails({ open, details, onClose }) {
     }, [open])
 
     return (
-        <div>
-            <Dialog
-                open={Boolean(open)}
-                onClose={onClose}
-                aria-labelledby='scroll-dialog-title'
-                aria-describedby='scroll-dialog-description'
-                fullWidth={true}
-            >
-                <DialogTitle id='scroll-dialog-title' minHeight='3rem'>
-                    <IconButton
-                        aria-label='close'
-                        onClick={onClose}
-                        sx={{
-                            position: 'absolute',
-                            right: 8,
-                            top: 8,
-                            color: (theme) => theme.palette.grey[500]
-                        }}
-                    >
-                        <CloseIcon />
-                    </IconButton>
-                </DialogTitle>
-                <Divider />
-                <DialogContent dividers={scroll === 'paper'}>
-                    <Grid display='grid' gap={1}>
-                        {/* TODO to move in component - start */}
-                        <Grid display='grid' gridTemplateColumns='1fr 3fr' gap={1}>
-                            <Chip label='Question: ' style={{ width: '100%' }} />
-                            {details?.text?.question}
-                            <Chip label='Context: ' style={{ width: '100%' }} />
-                            {details?.context}
-                            <Chip label='Inputs: ' style={{ width: '100%' }} />
-                            {details?.inputs}
-                            <Chip label='Answer: ' style={{ width: '100%' }} />
-                            {details?.text?.answer}
-                            <Chip label='Quality: ' style={{ width: '100%' }} />
-                            <Grid>
-                                {details?.quality?.thumbsUp && <ThumbUpIcon color='success' />}
-                                {details?.quality?.thumbsDown && <ThumbDownIcon color='error' />}
-                                {details?.quality?.text && (
-                                    <Grid container>
-                                        <TextsmsIcon />
-                                        <Typography component='p' marginLeft='6px'>
-                                            {details?.quality?.text}
-                                        </Typography>
-                                    </Grid>
-                                )}
-                            </Grid>
+        <Dialog
+            open={Boolean(open)}
+            onClose={onClose}
+            aria-labelledby='scroll-dialog-title'
+            aria-describedby='scroll-dialog-description'
+            fullWidth={true}
+        >
+            <DialogTitle id='scroll-dialog-title' minHeight='3rem'>
+                <IconButton
+                    aria-label='close'
+                    onClick={onClose}
+                    sx={{
+                        position: 'absolute',
+                        right: 8,
+                        top: 8,
+                        color: (theme) => theme.palette.grey[500]
+                    }}
+                >
+                    <CloseIcon />
+                </IconButton>
+            </DialogTitle>
+            <Divider />
+            <DialogContent dividers={scroll === 'paper'}>
+                <Grid display='grid' gap={1}>
+                    {/* TODO to move in component - start */}
+                    <Grid display='grid' gridTemplateColumns='1fr 3fr' gap={1}>
+                        <Chip label='Question: ' style={{ width: '100%' }} />
+                        {details?.text?.question}
+                        <Chip label='Context: ' style={{ width: '100%' }} />
+                        {details?.context}
+                        <Chip label='Inputs: ' style={{ width: '100%' }} />
+                        {details?.inputs}
+                        <Chip label='Answer: ' style={{ width: '100%' }} />
+                        {details?.text?.answer}
+                        <Chip label='Quality: ' style={{ width: '100%' }} />
+                        <Grid>
+                            {details?.quality?.thumbsUp && <ThumbUpIcon color='success' />}
+                            {details?.quality?.thumbsDown && <ThumbDownIcon color='error' />}
+                            {details?.quality?.text && (
+                                <Grid container>
+                                    <TextsmsIcon />
+                                    <Typography component='p' marginLeft='6px'>
+                                        {details?.quality?.text}
+                                    </Typography>
+                                </Grid>
+                            )}
                         </Grid>
-                        {/* to move in component - end */}
-                        <Divider />
-                        <Button variant='contained' startIcon={<QuestionAnswerIcon />}>
-                            Show thread
-                        </Button>
                     </Grid>
-                </DialogContent>
-            </Dialog>
-        </div>
+                    {/* to move in component - end */}
+                    <Divider />
+                    <Button variant='contained' startIcon={<QuestionAnswerIcon />}>
+                        Show thread
+                    </Button>
+                </Grid>
+            </DialogContent>
+        </Dialog>
     )
 }
 

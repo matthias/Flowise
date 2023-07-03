@@ -23,6 +23,13 @@ export interface IChatMessage {
     chatflowid: string
     createdDate: Date
     sourceDocuments: string
+    context: string
+}
+
+export interface IChatLog {
+    id: string
+    chatflowid: string
+    messages: IChatMessage[]
 }
 
 export interface ITool {

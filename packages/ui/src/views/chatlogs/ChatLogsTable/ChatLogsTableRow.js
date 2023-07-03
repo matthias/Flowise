@@ -82,9 +82,9 @@ export function ChatLogsTableRow({ data, isItemSelected, onToggleSelection }) {
 }
 
 ChatLogsTableRow.propTypes = {
-    onToggleSelection: () => {},
+    onToggleSelection: PropTypes.func,
     isItemSelected: PropTypes.bool.isRequired,
-    data: {
+    data: PropTypes.shape({
         id: PropTypes.number.isRequired,
         text: PropTypes.shape({
             question: PropTypes.string.isRequired,
@@ -93,9 +93,9 @@ ChatLogsTableRow.propTypes = {
         quality: PropTypes.shape({
             thumbsUp: PropTypes.bool.isRequired,
             thumbsDown: PropTypes.bool.isRequired,
-            text: PropTypes.string.isRequired
+            text: PropTypes.string
         }).isRequired,
         inputs: PropTypes.string.isRequired,
         context: PropTypes.string.isRequired
-    }
+    })
 }

@@ -17,7 +17,9 @@ import {
     INodeData,
     IDatabaseExport,
     IRunChatflowMessageValue,
-    IChildProcessMessage
+    IChildProcessMessage,
+    IChatLog,
+    IChatMessage
 } from './Interface'
 import {
     getNodeModulesPackagePath,
@@ -49,6 +51,7 @@ import { ChatflowPool } from './ChatflowPool'
 import { ICommonObject, INodeOptionsValue } from 'flowise-components'
 import { fork } from 'child_process'
 import { Tool } from './entity/Tool'
+import { ChatLog } from './entity/ChatLog'
 
 export class App {
     app: express.Application
@@ -60,7 +63,7 @@ export class App {
         this.app = express()
 
         // Add the requestLogger middleware to log all requests
-        this.app.use(requestLogger);
+        this.app.use(requestLogger)
     }
 
     async initDatabase() {
@@ -271,10 +274,21 @@ export class App {
 
         // Add chatmessages for chatflowid
         this.app.post('/api/v1/chatmessage/:id', async (req: Request, res: Response) => {
+            const chatflowid = req.params.id
+            let chatLogThread = await this.AppDataSource.getRepository(ChatLog).findOne({ where: { chatflowid } })
+
+            // checking if the chat thread was created
+            if (!chatLogThread) {
+                chatLogThread = new ChatLog()
+                chatLogThread.chatflowid = chatflowid
+                chatLogThread.createdDate = new Date().toISOString()
+                await this.AppDataSource.getRepository(ChatLog).save(chatLogThread)
+            }
+
             const body = req.body
             const newChatMessage = new ChatMessage()
             Object.assign(newChatMessage, body)
-
+            newChatMessage.chatLog = chatLogThread as ChatLog
             const chatmessage = this.AppDataSource.getRepository(ChatMessage).create(newChatMessage)
             const results = await this.AppDataSource.getRepository(ChatMessage).save(chatmessage)
 
@@ -283,7 +297,9 @@ export class App {
 
         // Delete all chatmessages from chatflowid
         this.app.delete('/api/v1/chatmessage/:id', async (req: Request, res: Response) => {
-            const results = await this.AppDataSource.getRepository(ChatMessage).delete({ chatflowid: req.params.id })
+            const chatflowid = req.params.id
+            const results = await this.AppDataSource.getRepository(ChatMessage).delete({ chatflowid })
+            await this.AppDataSource.getRepository(ChatLog).delete({ chatflowid }) // TODO not sure we have to delete logs, better to archive
             return res.json(results)
         })
 
@@ -392,7 +408,7 @@ export class App {
 
             try {
                 const chatflows: ChatFlow[] = databaseItems.chatflows
-                const chatmessages: ChatMessage[] = databaseItems.chatmessages
+                const chatmessages: IChatMessage[] = databaseItems.chatmessages
 
                 await queryRunner.manager.insert(ChatFlow, chatflows)
                 await queryRunner.manager.insert(ChatMessage, chatmessages)
@@ -475,6 +491,18 @@ export class App {
         this.app.delete('/api/v1/apikey/:id', async (req: Request, res: Response) => {
             const keys = await deleteAPIKey(req.params.id)
             return res.json(keys)
+        })
+
+        // ----------------------------------------
+        // Chat logs
+        // ----------------------------------------
+        this.app.get('/api/v1/chatlogs', async (req: Request, res: Response) => {
+            const logs: IChatLog[] = await this.AppDataSource.getRepository(ChatLog).find({
+                relations: {
+                    messages: true
+                }
+            })
+            return res.json(logs)
         })
 
         // ----------------------------------------

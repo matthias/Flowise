@@ -108,6 +108,7 @@ export interface INodeData extends INodeProperties {
 export interface IMessage {
     message: string
     type: MessageType
+    context?: string
 }
 
 /**

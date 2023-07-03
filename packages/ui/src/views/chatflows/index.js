@@ -84,6 +84,7 @@ const Chatflows = () => {
                 for (let i = 0; i < chatflows.length; i += 1) {
                     const flowDataStr = chatflows[i].flowData
                     const flowData = JSON.parse(flowDataStr)
+                    console.log(flowData?.nodes)
                     const nodes = flowData.nodes || []
                     images[chatflows[i].id] = []
                     for (let j = 0; j < nodes.length; j += 1) {
