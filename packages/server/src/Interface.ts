@@ -28,7 +28,7 @@ export interface IChatMessage {
 
 export interface IChatLog {
     id: string
-    chatflowid: string
+    chatid: string
     messages: IChatMessage[]
 }
 

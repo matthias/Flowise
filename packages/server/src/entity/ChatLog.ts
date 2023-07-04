@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { Entity, OneToMany, CreateDateColumn, PrimaryGeneratedColumn, JoinColumn, Index, Column } from 'typeorm'
 import { IChatLog } from '../Interface'
-import { ChatMessage } from './ChatMessage'
+import { ExternalChat } from './ExternalChat'
 
 @Entity()
 export class ChatLog implements IChatLog {
@@ -10,11 +10,11 @@ export class ChatLog implements IChatLog {
 
     @Index()
     @Column()
-    chatflowid: string
+    chatid: string
 
-    @OneToMany(() => ChatMessage, (message) => message.chatLog)
-    @JoinColumn({ name: 'chatflowid' })
-    messages: ChatMessage[]
+    @OneToMany(() => ExternalChat, (message) => message.chatLog)
+    @JoinColumn({ name: 'chatid' })
+    messages: ExternalChat[]
 
     @CreateDateColumn()
     createdDate: string

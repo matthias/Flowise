@@ -48,10 +48,13 @@ import { NodesPool } from './NodesPool'
 import { ChatFlow } from './entity/ChatFlow'
 import { ChatMessage } from './entity/ChatMessage'
 import { ChatflowPool } from './ChatflowPool'
-import { ICommonObject, INodeOptionsValue } from 'flowise-components'
+import { ICommonObject, INodeOptionsValue, MessageType } from 'flowise-components'
 import { fork } from 'child_process'
 import { Tool } from './entity/Tool'
 import { ChatLog } from './entity/ChatLog'
+import { saveChatLogs, saveExternalChatMessage } from './services/chatLogs'
+import { InternalChat } from './entity/InternalChat'
+import { ExternalChat } from './entity/ExternalChat'
 
 export class App {
     app: express.Application
@@ -266,7 +269,7 @@ export class App {
 
         // Get all chatmessages from chatflowid
         this.app.get('/api/v1/chatmessage/:id', async (req: Request, res: Response) => {
-            const chatmessages = await this.AppDataSource.getRepository(ChatMessage).findBy({
+            const chatmessages = await this.AppDataSource.getRepository(InternalChat).findBy({
                 chatflowid: req.params.id
             })
             return res.json(chatmessages)
@@ -274,32 +277,18 @@ export class App {
 
         // Add chatmessages for chatflowid
         this.app.post('/api/v1/chatmessage/:id', async (req: Request, res: Response) => {
-            const chatflowid = req.params.id
-            let chatLogThread = await this.AppDataSource.getRepository(ChatLog).findOne({ where: { chatflowid } })
-
-            // checking if the chat thread was created
-            if (!chatLogThread) {
-                chatLogThread = new ChatLog()
-                chatLogThread.chatflowid = chatflowid
-                chatLogThread.createdDate = new Date().toISOString()
-                await this.AppDataSource.getRepository(ChatLog).save(chatLogThread)
-            }
-
             const body = req.body
-            const newChatMessage = new ChatMessage()
+            const newChatMessage = new InternalChat()
             Object.assign(newChatMessage, body)
-            newChatMessage.chatLog = chatLogThread as ChatLog
-            const chatmessage = this.AppDataSource.getRepository(ChatMessage).create(newChatMessage)
-            const results = await this.AppDataSource.getRepository(ChatMessage).save(chatmessage)
-
+            const chatmessage = this.AppDataSource.getRepository(InternalChat).create(newChatMessage)
+            const results = await this.AppDataSource.getRepository(InternalChat).save(chatmessage)
             return res.json(results)
         })
 
         // Delete all chatmessages from chatflowid
         this.app.delete('/api/v1/chatmessage/:id', async (req: Request, res: Response) => {
             const chatflowid = req.params.id
-            const results = await this.AppDataSource.getRepository(ChatMessage).delete({ chatflowid })
-            await this.AppDataSource.getRepository(ChatLog).delete({ chatflowid }) // TODO not sure we have to delete logs, better to archive
+            const results = await this.AppDataSource.getRepository(InternalChat).delete({ chatflowid })
             return res.json(results)
         })
 
@@ -381,7 +370,7 @@ export class App {
         // ----------------------------------------
 
         this.app.get('/api/v1/database/export', async (req: Request, res: Response) => {
-            const chatmessages = await this.AppDataSource.getRepository(ChatMessage).find()
+            const chatmessages = await this.AppDataSource.getRepository(InternalChat).find()
             const chatflows = await this.AppDataSource.getRepository(ChatFlow).find()
             const apikeys = await getAPIKeys()
             const result: IDatabaseExport = {
@@ -396,7 +385,7 @@ export class App {
             const databaseItems: IDatabaseExport = req.body
 
             await this.AppDataSource.getRepository(ChatFlow).delete({})
-            await this.AppDataSource.getRepository(ChatMessage).delete({})
+            await this.AppDataSource.getRepository(InternalChat).delete({})
 
             let error = ''
 
@@ -411,7 +400,7 @@ export class App {
                 const chatmessages: IChatMessage[] = databaseItems.chatmessages
 
                 await queryRunner.manager.insert(ChatFlow, chatflows)
-                await queryRunner.manager.insert(ChatMessage, chatmessages)
+                await queryRunner.manager.insert(InternalChat, chatmessages)
 
                 await queryRunner.commitTransaction()
             } catch (err: any) {
@@ -502,6 +491,7 @@ export class App {
                     messages: true
                 }
             })
+
             return res.json(logs)
         })
 
@@ -757,6 +747,13 @@ export class App {
                 const nodeInstance = new nodeModule.nodeClass()
 
                 isStreamValid = isStreamValid && !isVectorStoreFaiss(nodeToExecuteData)
+
+                let chatLogThread: any
+                if (!isInternal) {
+                    const externalChatId = incomingInput.socketIOClientId as string
+                    chatLogThread = await saveChatLogs({ dataSource: this.AppDataSource, chatLogModel: ChatLog, id: externalChatId })
+                }
+
                 const result = isStreamValid
                     ? await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
                           chatHistory: incomingInput.history,
@@ -764,6 +761,22 @@ export class App {
                           socketIOClientId: incomingInput.socketIOClientId
                       })
                     : await nodeInstance.run(nodeToExecuteData, incomingInput.question, { chatHistory: incomingInput.history })
+
+                if (!isInternal && chatLogThread) {
+                    const data = [
+                        { content: incomingInput.question as string, chatflowid, role: 'userMessage' as MessageType },
+                        {
+                            content: result as string,
+                            chatflowid,
+                            role: 'apiMessage' as MessageType
+                        }
+                    ]
+                    await saveExternalChatMessage({
+                        dataSource: this.AppDataSource,
+                        data,
+                        chatLogThread
+                    })
+                }
 
                 return res.json(result)
             }
@@ -790,7 +803,7 @@ export class App {
 export async function getChatId(chatflowid: string) {
     // first chatmessage id as the unique chat id
     const firstChatMessage = await getDataSource()
-        .getRepository(ChatMessage)
+        .getRepository(InternalChat)
         .createQueryBuilder('cm')
         .select('cm.id')
         .where('chatflowid = :chatflowid', { chatflowid })

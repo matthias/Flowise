@@ -5,6 +5,9 @@ import { ChatFlow } from './entity/ChatFlow'
 import { ChatMessage } from './entity/ChatMessage'
 import { Tool } from './entity/Tool'
 import { ChatLog } from './entity/ChatLog'
+import { ExternalChat } from './entity/ExternalChat'
+import { InternalChat } from './entity/InternalChat'
+
 import { getUserHome } from './utils'
 
 let appDataSource: DataSource
@@ -16,7 +19,7 @@ export const init = async (): Promise<void> => {
         type: 'sqlite',
         database: path.resolve(homePath, 'database.sqlite'),
         synchronize: true,
-        entities: [ChatFlow, ChatMessage, Tool, ChatLog],
+        entities: [ChatFlow, ChatMessage, Tool, ChatLog, ExternalChat, InternalChat],
         migrations: []
     })
 }
