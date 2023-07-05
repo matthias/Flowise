@@ -3,7 +3,7 @@ import { Entity, Column, CreateDateColumn, PrimaryGeneratedColumn, Index } from 
 import { IChatMessage, MessageType } from '../Interface'
 
 @Entity()
-export abstract class ChatMessage implements IChatMessage {
+export class ChatMessage implements IChatMessage {
     @PrimaryGeneratedColumn('uuid')
     id: string
 

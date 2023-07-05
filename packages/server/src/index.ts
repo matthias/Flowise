@@ -46,7 +46,6 @@ import { cloneDeep } from 'lodash'
 import { getDataSource } from './DataSource'
 import { NodesPool } from './NodesPool'
 import { ChatFlow } from './entity/ChatFlow'
-import { ChatMessage } from './entity/ChatMessage'
 import { ChatflowPool } from './ChatflowPool'
 import { ICommonObject, INodeOptionsValue, MessageType } from 'flowise-components'
 import { fork } from 'child_process'
@@ -54,7 +53,6 @@ import { Tool } from './entity/Tool'
 import { ChatLog } from './entity/ChatLog'
 import { saveChatLogs, saveExternalChatMessage } from './services/chatLogs'
 import { InternalChat } from './entity/InternalChat'
-import { ExternalChat } from './entity/ExternalChat'
 
 export class App {
     app: express.Application
@@ -748,6 +746,7 @@ export class App {
 
                 isStreamValid = isStreamValid && !isVectorStoreFaiss(nodeToExecuteData)
 
+                // TODO add transaction here
                 let chatLogThread: any
                 if (!isInternal) {
                     const externalChatId = incomingInput.socketIOClientId as string
@@ -778,7 +777,7 @@ export class App {
                     })
                 }
 
-                return res.json(result)
+                return res.json({ result, nodeToExecuteData })
             }
         } catch (e: any) {
             return res.status(500).send(e.message)

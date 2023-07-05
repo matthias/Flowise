@@ -1,7 +1,6 @@
 import { DataSource, EntityTarget } from 'typeorm'
 import logger from '../../utils/logger'
 import { ChatLog } from '../../entity/ChatLog'
-import { ChatMessage } from '../../entity/ChatMessage'
 import { MessageType } from 'flowise-components'
 import { ExternalChat } from '../../entity/ExternalChat'
 
@@ -45,8 +44,7 @@ async function saveExternalChatMessage({ data, chatLogThread, dataSource }: TSav
             Object.assign(message, item)
             return message
         })
-        const chatmessage = dataSource.getRepository(ExternalChat).create(newChatMessage)
-        return await dataSource.getRepository(ExternalChat).save(chatmessage)
+        return await dataSource.createQueryBuilder().insert().into(ExternalChat).values(newChatMessage).execute()
     } catch (error) {
         logger.error(error)
     }
