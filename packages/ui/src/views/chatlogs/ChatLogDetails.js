@@ -7,9 +7,7 @@ import ThumbUpIcon from '@mui/icons-material/ThumbUp'
 import ThumbDownIcon from '@mui/icons-material/ThumbDown'
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer'
 
-export function ChatLogDetails({ details, onClose }) {
-    const open = details && !!Object.keys(details).length
-
+export function ChatLogDetails({ open, details, onClose }) {
     const descriptionElementRef = React.useRef(null)
 
     React.useEffect(() => {
@@ -84,6 +82,7 @@ export function ChatLogDetails({ details, onClose }) {
 }
 
 ChatLogDetails.propTypes = {
+    open: PropTypes.bool,
     details: PropTypes.object,
     onClose: function () {}
 }
