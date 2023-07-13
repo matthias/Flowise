@@ -4,10 +4,12 @@ import path from 'path'
 import cors from 'cors'
 import http from 'http'
 import * as fs from 'fs'
+import readline from 'readline'
 import basicAuth from 'express-basic-auth'
 import { Server } from 'socket.io'
 import logger from './utils/logger'
 import { expressRequestLogger } from './utils/logger'
+import { readFile } from 'fs/promises'
 
 import {
     IChatFlow,
@@ -328,6 +330,18 @@ export class App {
         this.app.delete('/api/v1/chatmessage/:id', async (req: Request, res: Response) => {
             const results = await this.AppDataSource.getRepository(ChatMessage).delete({ chatflowid: req.params.id })
             return res.json(results)
+        })
+
+        // ----------------------------------------
+        // ChatLog
+        // ----------------------------------------
+
+        // Define the path to the chatlog file
+
+        this.app.get('/api/v1/chatlog', async (req: Request, res: Response) => {
+            // load chatlog file or chatlog entries from database
+            // enable pagination, etc ... for UI
+            // enable searching ?q=
         })
 
         // ----------------------------------------
@@ -833,6 +847,8 @@ export class App {
                     _incomingInput: incomingInput,
                     _result: result
                 })
+                // currently the UI (view) stores the messages via API calls to the server
+                // but here at this point I see the only place where we can store the messages including the context
                 return res.json(result)
             }
         } catch (e: any) {
