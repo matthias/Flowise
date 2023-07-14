@@ -50,6 +50,7 @@ import { ChatflowPool } from './ChatflowPool'
 import { ICommonObject, INodeOptionsValue } from 'flowise-components'
 import { fork } from 'child_process'
 import { Tool } from './entity/Tool'
+import { ChainLog } from './entity/ChainLog'
 
 export class App {
     app: express.Application
@@ -833,6 +834,18 @@ export class App {
                     _incomingInput: incomingInput,
                     _result: result
                 })
+
+                // save logs to database
+                this.AppDataSource.getRepository(ChainLog).save({
+                    question: incomingInput.question,
+                    text: result?.text,
+                    chatId: chatId,
+                    isInternal: isInternal,
+                    chatflowId: chatflowid,
+                    chatflowName: chatflow.name,
+                    result: result
+                })
+
                 return res.json(result)
             }
         } catch (e: any) {

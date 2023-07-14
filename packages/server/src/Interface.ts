@@ -167,3 +167,12 @@ export interface IChildProcessMessage {
     key: string
     value?: any
 }
+
+export interface IChainLog {
+    question: string
+    text: string
+    isInternal: boolean
+    chatflowId: string
+    chatflowName: string
+    result: unknown
+}
