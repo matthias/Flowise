@@ -51,6 +51,7 @@ import { ICommonObject, INodeOptionsValue } from 'flowise-components'
 import { fork } from 'child_process'
 import { Tool } from './entity/Tool'
 import { ChainLog } from './entity/ChainLog'
+import { getDataByQueries, prepareQueryParametersForLists } from './utils/queryHelpers'
 
 export class App {
     app: express.Application
@@ -546,6 +547,21 @@ export class App {
                 const apiKey = await getApiKey(req.params.apiKey)
                 if (!apiKey) return res.status(401).send('Unauthorized')
                 return res.status(200).send('OK')
+            } catch (err: any) {
+                return res.status(500).send(err?.message)
+            }
+        })
+
+        // Get all chain logs
+        this.app.get('/api/v1/chain-logs', async (req: Request, res: Response) => {
+            try {
+                const { query } = req
+                const repository = this.AppDataSource.getRepository(ChainLog)
+
+                const queryParameters = prepareQueryParametersForLists(query)
+                const data = await getDataByQueries({ repository, ...queryParameters })
+
+                return res.status(200).json(data)
             } catch (err: any) {
                 return res.status(500).send(err?.message)
             }
