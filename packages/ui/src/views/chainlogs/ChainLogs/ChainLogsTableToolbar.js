@@ -1,25 +1,30 @@
+import { useEffect, useState } from 'react'
 import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
-import IconButton from '@mui/material/IconButton'
-import Tooltip from '@mui/material/Tooltip'
-import DeleteIcon from '@mui/icons-material/Delete'
-import FilterListIcon from '@mui/icons-material/FilterList'
 import PropTypes from 'prop-types'
-import { alpha } from '@mui/material/styles'
-// import { SearchingField } from 'ui-component/input/SearchingField'
+import { SearchingField } from 'ui-component/input/SearchField'
 import Grid from '@mui/material/Unstable_Grid2'
+import { useDebounce } from 'hooks/useDebounce'
 
 export function ChainLogsTableToolbar(props) {
-    const { numSelected } = props
+    const { numSelected, onChangeTerm } = props
+
+    const [value, setValue] = useState('')
+    const debouncedValue = useDebounce(value, 500)
+
+    const handleChange = (event) => {
+        setValue(event.target.value)
+    }
+
+    useEffect(() => {
+        onChangeTerm(value)
+    }, [debouncedValue])
 
     return (
         <Toolbar>
             <Grid container xs={12}>
                 <Grid container xs={12} sm={12}>
-                    {/* <SearchingField /> */}
-                    <IconButton>
-                        <FilterListIcon />
-                    </IconButton>
+                    <SearchingField onChange={handleChange} />
                 </Grid>
 
                 <Grid
@@ -29,9 +34,6 @@ export function ChainLogsTableToolbar(props) {
                         mt: 1,
                         pl: { sm: 2 },
                         pr: { xs: 1, sm: 1 }
-                        // ...(numSelected > 0 && {
-                        //     bgcolor: (theme) => alpha(theme.palette.primary.main, theme.palette.action.activatedOpacity)
-                        // })
                     }}
                 >
                     {numSelected > 0 ? (
@@ -41,14 +43,6 @@ export function ChainLogsTableToolbar(props) {
                     ) : (
                         <Typography sx={{ flex: '1 0 auto' }} variant='h6' id='tableTitle' component='div'></Typography>
                     )}
-
-                    {/* {numSelected > 0 && (
-                        <Tooltip title='Delete'>
-                            <IconButton>
-                                <DeleteIcon />
-                            </IconButton>
-                        </Tooltip>
-                    )} */}
                 </Grid>
             </Grid>
         </Toolbar>
@@ -56,5 +50,6 @@ export function ChainLogsTableToolbar(props) {
 }
 
 ChainLogsTableToolbar.propTypes = {
-    numSelected: PropTypes.number.isRequired
+    numSelected: PropTypes.number.isRequired,
+    onChangeTerm: PropTypes.func
 }

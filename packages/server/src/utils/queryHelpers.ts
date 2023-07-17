@@ -56,10 +56,6 @@ async function getDataByQueries<T extends ObjectLiteral>({
         options = Object.assign(options, { where: searchConditions })
     }
 
-    if (!isEmpty(sortColumns)) {
-        options = Object.assign(options)
-    }
-
     const [result, total] = await repository.findAndCount(options)
     const lastPage = Math.ceil(total / pageSize) || 1
     const nextPage = page >= lastPage ? null : page + 1
@@ -83,13 +79,13 @@ function prepareQueryParametersForLists(query: any) {
     const page = Number(query?.page) || 1
     const pageSize = Number(query?.pageSize) || 15
     const searchColumns: any = (query.searchFields as string)?.split(',')
-    const sortFields = (query.sortFields as string)?.split(',') || []
+    const sortFields = query?.sortFields ? query.sortFields?.split(',') : []
     const sortOrders = (query.sortOrders as string)?.split(',') || []
 
-    const sortColumns: Record<string, 'ASC' | 'DESC'> = sortFields.reduce((result, field, index) => {
+    const sortColumns: Record<string, 'ASC' | 'DESC'> = sortFields.reduce((result: Record<string, any>, field: any, index: number) => {
         result[field] = sortOrders[index] as 'ASC' | 'DESC'
         return result
-    }, {} as Record<string, any>)
+    }, {})
 
     return { searchTerm, page, pageSize, searchColumns, sortColumns }
 }

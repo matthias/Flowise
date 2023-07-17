@@ -1,34 +1,39 @@
 import * as React from 'react'
 import PropTypes from 'prop-types'
-import { visuallyHidden } from '@mui/utils'
-import { IconButton, TableCell, TableRow, Box, Checkbox, TableHead, TableSortLabel } from '@mui/material'
-import FilterListIcon from '@mui/icons-material/FilterList'
+import { TableCell, TableRow, Checkbox, TableHead, TableSortLabel } from '@mui/material'
 
 const headCells = [
     {
-        id: 'Chatflow'
+        id: 'chatflowName',
+        label: 'Chatflow',
+        sortable: true
     },
     {
-        id: 'Input'
+        id: 'Input',
+        label: 'Input'
     },
     {
-        id: 'Output'
+        id: 'Output',
+        label: 'Output'
     },
     {
-        id: 'Chat ID'
+        id: 'chatId',
+        label: 'Chat ID',
+        sortable: true
     },
     {
-        id: 'Timestamp'
+        id: 'createdDate',
+        label: 'Timestamp',
+        sortable: true
     },
     {
-        id: 'Actions'
+        id: 'Actions',
+        label: 'Actions'
     }
 ]
 
 export function ChainLogsTableHead(props) {
     const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } = props
-
-    const onSort = () => {}
 
     return (
         <TableHead>
@@ -44,15 +49,26 @@ export function ChainLogsTableHead(props) {
                         }}
                     />
                 </TableCell>
-                {headCells.map((headCell) => (
-                    <TableCell key={headCell.id} align='center' padding='none' sortDirection={orderBy === headCell.id ? order : false}>
-                        {headCell?.sortable && (
-                            <IconButton onClick={onSort}>
-                                <FilterListIcon />
-                            </IconButton>
-                        )}
-                    </TableCell>
-                ))}
+                {headCells.map((headCell) => {
+                    const isSorting = headCell?.sortable
+                    const isCurrent = orderBy === headCell.id
+
+                    return (
+                        <TableCell key={headCell.id}>
+                            {isSorting ? (
+                                <TableSortLabel
+                                    active={isCurrent && order}
+                                    direction={isCurrent ? order.toLowerCase() : 'ASC'}
+                                    onClick={() => onRequestSort(headCell.id)}
+                                >
+                                    {headCell?.label}
+                                </TableSortLabel>
+                            ) : (
+                                headCell?.label
+                            )}
+                        </TableCell>
+                    )
+                })}
             </TableRow>
         </TableHead>
     )
