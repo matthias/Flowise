@@ -16,6 +16,9 @@ const APIKey = Loadable(lazy(() => import('views/apikey')))
 // apikey routing
 const Tools = Loadable(lazy(() => import('views/tools')))
 
+// Chat logs
+const ChainLogs = Loadable(lazy(() => import('views/chainlogs')))
+
 // ==============================|| MAIN ROUTING ||============================== //
 
 const MainRoutes = {
@@ -41,6 +44,10 @@ const MainRoutes = {
         {
             path: '/tools',
             element: <Tools />
+        },
+        {
+            path: '/chain-logs',
+            element: <ChainLogs />
         }
     ]
 }
