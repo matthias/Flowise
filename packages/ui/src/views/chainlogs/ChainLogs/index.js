@@ -1,24 +1,23 @@
-import * as React from 'react'
-import { Box, Table, TableBody, Checkbox, Paper, TableCell, TableRow, TableContainer, IconButton, Typography } from '@mui/material'
+import { useState } from 'react'
+import { Box, Table, TableBody, Checkbox, Paper, TableCell, TableRow, TableContainer, IconButton } from '@mui/material'
 import { ChainLogsTableHead } from './ChainLogsTableHead'
 import { ChainLogsTableToolbar } from './ChainLogsTableToolbar'
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 import { ChainLogsDetails } from '../ChainLogsDetails'
-import { useChainLogs } from '../useChainLogs'
+import { useChainLogs } from './useChainLogs'
 import moment from 'moment'
 import { CustomPagination } from 'ui-component/pagination'
 
 const PAGE_SIZES = [15, 25, 50]
 
 export default function ChainLogsTable() {
-    const { sort, sortBy, page, pageSize, data, meta, isLoading, handleRequestSort, onChangeTerm, onChangePage, onChangePaeSize } =
-        useChainLogs({
-            pageSizes: PAGE_SIZES
-        })
+    const { sort, sortBy, page, pageSize, data, meta, handleRequestSort, onChangeTerm, onChangePage, onChangePaeSize } = useChainLogs({
+        pageSizes: PAGE_SIZES
+    })
 
-    const [selected, setSelected] = React.useState([])
+    const [selected, setSelected] = useState([])
 
-    const [logDetails, setLogDetails] = React.useState(null)
+    const [logDetails, setLogDetails] = useState(null)
 
     const handleSelectAllClick = (event) => {
         if (event.target.checked) {
@@ -58,10 +57,7 @@ export default function ChainLogsTable() {
 
     const isSelected = (id) => selected.indexOf(id) !== -1
 
-    if (!data || !meta) return 'Loading...'
-
-    // Avoid a layout jump when reaching the last page with empty rows.
-    const emptyRows = page > 0 ? Math.max(1, (1 + page) * pageSize - meta.totalItems.length) : 1
+    if (!data) return 'Loading...'
 
     return (
         <>
@@ -125,15 +121,6 @@ export default function ChainLogsTable() {
                                         </TableRow>
                                     )
                                 })}
-                                {/* {emptyRows > 0 && (
-                                    <TableRow
-                                        style={{
-                                            height: (dense ? 33 : 53) * emptyRows
-                                        }}
-                                    >
-                                        <TableCell colSpan={6} />
-                                    </TableRow>
-                                )} */}
                             </TableBody>
                         </Table>
                     </TableContainer>

@@ -1,4 +1,3 @@
-import * as React from 'react'
 import PropTypes from 'prop-types'
 import { TableCell, TableRow, Checkbox, TableHead, TableSortLabel } from '@mui/material'
 
@@ -52,12 +51,12 @@ export function ChainLogsTableHead(props) {
                 {headCells.map((headCell) => {
                     const isSorting = headCell?.sortable
                     const isCurrent = orderBy === headCell.id
-
+                    const isActive = Boolean(isCurrent && order)
                     return (
                         <TableCell key={headCell.id}>
                             {isSorting ? (
                                 <TableSortLabel
-                                    active={isCurrent && order}
+                                    active={isActive}
                                     direction={isCurrent ? order.toLowerCase() : 'ASC'}
                                     onClick={() => onRequestSort(headCell.id)}
                                 >
@@ -78,7 +77,7 @@ ChainLogsTableHead.propTypes = {
     numSelected: PropTypes.number.isRequired,
     onRequestSort: PropTypes.func.isRequired,
     onSelectAllClick: PropTypes.func.isRequired,
-    order: PropTypes.oneOf(['asc', 'desc']).isRequired,
+    order: PropTypes.oneOf(['ASC', 'DESC', '']).isRequired,
     orderBy: PropTypes.string.isRequired,
     rowCount: PropTypes.number.isRequired
 }

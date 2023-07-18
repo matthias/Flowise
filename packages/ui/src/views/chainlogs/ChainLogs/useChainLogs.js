@@ -5,8 +5,8 @@ import useApi from 'hooks/useApi'
 export function useChainLogs({ pageSizes }) {
     const { data, isLoading, request } = useApi(getAllChainLogs)
     const [term, setTerm] = useState('')
-    const [sort, setSort] = useState('')
-    const [sortBy, setSortBy] = useState('')
+    const [sort, setSort] = useState('DESC')
+    const [sortBy, setSortBy] = useState('createdDate')
 
     const [page, setPage] = useState(1)
     const [pageSize, setPageSize] = useState(pageSizes[0])
@@ -14,7 +14,7 @@ export function useChainLogs({ pageSizes }) {
     useEffect(() => {
         const params = { searchFields: 'question,text', search: term, page, pageSize, sortOrders: sort, sortFields: sortBy }
         request({ params })
-    }, [term, sort, page, pageSize])
+    }, [term, sort, page, pageSize, sortBy]) // eslint-disable-line
 
     function onChangeTerm(term) {
         setTerm(term)
