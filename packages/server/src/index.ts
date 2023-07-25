@@ -51,6 +51,8 @@ import { ChatflowPool } from './ChatflowPool'
 import { ICommonObject, INodeOptionsValue } from 'flowise-components'
 import { fork } from 'child_process'
 import { Tool } from './entity/Tool'
+import { ChainLog } from './entity/ChainLog'
+import { getDataByQueries, prepareQueryParametersForLists } from './utils/queryHelpers'
 
 export class App {
     app: express.Application
@@ -569,6 +571,21 @@ export class App {
             }
         })
 
+        // Get all chain logs
+        this.app.get('/api/v1/chain-logs', async (req: Request, res: Response) => {
+            try {
+                const { query } = req
+                const repository = this.AppDataSource.getRepository(ChainLog)
+
+                const queryParameters = prepareQueryParametersForLists(query)
+                const data = await getDataByQueries({ repository, ...queryParameters })
+
+                return res.status(200).json(data)
+            } catch (err: any) {
+                return res.status(500).send(err?.message)
+            }
+        })
+
         // ----------------------------------------
         // Serve UI static
         // ----------------------------------------
@@ -831,7 +848,7 @@ export class App {
                 const nodeInstance = new nodeModule.nodeClass()
 
                 isStreamValid = isStreamValid && !isVectorStoreFaiss(nodeToExecuteData)
-                logger.debug(`[server]: Running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
+                logger.verbose(`[server]: Running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
                 const result = isStreamValid
                     ? await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
                           chatHistory: incomingInput.history,
@@ -841,7 +858,29 @@ export class App {
                       })
                     : await nodeInstance.run(nodeToExecuteData, incomingInput.question, { chatHistory: incomingInput.history, logger })
 
-                logger.debug(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
+                logger.verbose(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
+                logger.verbose(`[server/prediction]: Generated prediction for chat ${chatId} with chatflow ${chatflow.name}`, {
+                    question: incomingInput.question,
+                    text: result?.text,
+                    chatId: chatId,
+                    isInternal: isInternal,
+                    chatflowId: chatflowid,
+                    chatflowName: chatflow.name,
+                    _incomingInput: incomingInput,
+                    _result: result
+                })
+
+                // save logs to database
+                this.AppDataSource.getRepository(ChainLog).save({
+                    question: incomingInput.question,
+                    text: result?.text,
+                    chatId: chatId,
+                    isInternal: isInternal,
+                    chatflowId: chatflowid,
+                    chatflowName: chatflow.name,
+                    result: result
+                })
+
                 return res.json(result)
             }
         } catch (e: any) {

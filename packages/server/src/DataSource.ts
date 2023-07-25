@@ -5,6 +5,7 @@ import { ChatFlow } from './entity/ChatFlow'
 import { ChatMessage } from './entity/ChatMessage'
 import { Tool } from './entity/Tool'
 import { getUserHome } from './utils'
+import { ChainLog } from './entity/ChainLog'
 
 let appDataSource: DataSource
 

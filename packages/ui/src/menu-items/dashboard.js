@@ -1,8 +1,8 @@
 // assets
-import { IconHierarchy, IconBuildingStore, IconKey, IconTool } from '@tabler/icons'
+import { IconHierarchy, IconBuildingStore, IconKey, IconTool, IconArticle } from '@tabler/icons'
 
 // constant
-const icons = { IconHierarchy, IconBuildingStore, IconKey, IconTool }
+const icons = { IconHierarchy, IconBuildingStore, IconKey, IconTool, IconArticle }
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
 
@@ -41,6 +41,14 @@ const dashboard = {
             type: 'item',
             url: '/apikey',
             icon: icons.IconKey,
+            breadcrumbs: true
+        },
+        {
+            id: 'chain-logs',
+            title: 'Chain Logs',
+            type: 'item',
+            url: '/chain-logs',
+            icon: IconArticle,
             breadcrumbs: true
         }
     ]
