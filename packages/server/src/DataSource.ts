@@ -19,7 +19,7 @@ export const init = async (): Promise<void> => {
                 type: 'sqlite',
                 database: path.resolve(homePath, 'database.sqlite'),
                 synchronize,
-                entities: [ChatFlow, ChatMessage, Tool],
+                entities: [ChatFlow, ChatMessage, Tool, ChainLog],
                 migrations: []
             })
             break
@@ -33,7 +33,7 @@ export const init = async (): Promise<void> => {
                 database: process.env.DATABASE_NAME,
                 charset: 'utf8mb4',
                 synchronize,
-                entities: [ChatFlow, ChatMessage, Tool],
+                entities: [ChatFlow, ChatMessage, Tool, ChainLog],
                 migrations: []
             })
             break
@@ -46,7 +46,7 @@ export const init = async (): Promise<void> => {
                 password: process.env.DATABASE_PASSWORD,
                 database: process.env.DATABASE_NAME,
                 synchronize,
-                entities: [ChatFlow, ChatMessage, Tool],
+                entities: [ChatFlow, ChatMessage, Tool, ChainLog],
                 migrations: []
             })
             break
@@ -56,7 +56,7 @@ export const init = async (): Promise<void> => {
                 type: 'sqlite',
                 database: path.resolve(homePath, 'database.sqlite'),
                 synchronize,
-                entities: [ChatFlow, ChatMessage, Tool],
+                entities: [ChatFlow, ChatMessage, Tool, ChainLog],
                 migrations: []
             })
             break
