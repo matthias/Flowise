@@ -1,23 +1,37 @@
 import { useState } from 'react'
-import { Box, Table, TableBody, Checkbox, Paper, TableCell, TableRow, TableContainer, IconButton } from '@mui/material'
+import { Box, Table, TableBody, Paper, TableCell, TableRow, TableContainer, LinearProgress } from '@mui/material'
 import { ChainLogsTableHead } from './ChainLogsTableHead'
 import { ChainLogsTableToolbar } from './ChainLogsTableToolbar'
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 import { ChainLogsDetails } from '../ChainLogsDetails'
 import { useChainLogs } from './useChainLogs'
-import moment from 'moment'
 import { CustomPagination } from 'ui-component/pagination'
+import ChainLogsTableRow from './ChainLogsTableRow'
+import ConfirmDialog from 'ui-component/dialog/ConfirmDialog'
 
 const PAGE_SIZES = [15, 25, 50]
 
 export default function ChainLogsTable() {
-    const { sort, sortBy, page, pageSize, data, meta, handleRequestSort, onChangeTerm, onChangePage, onChangePaeSize } = useChainLogs({
+    const {
+        sort,
+        sortBy,
+        page,
+        pageSize,
+        data,
+        meta,
+        handleRequestSort,
+        onChangeTerm,
+        onChangePage,
+        onChangePaeSize,
+        refetch,
+        handleFilter,
+        loading,
+        filters
+    } = useChainLogs({
         pageSizes: PAGE_SIZES
     })
 
-    const [selected, setSelected] = useState([])
-
     const [logDetails, setLogDetails] = useState(null)
+    const [selected, setSelected] = useState([])
 
     const handleSelectAllClick = (event) => {
         if (event.target.checked) {
@@ -51,20 +65,29 @@ export default function ChainLogsTable() {
         setLogDetails(log)
     }
 
-    const onHanleClickActions = (event) => event.stopPropagation()
-
     const onCloseDetailsWindow = () => setLogDetails(null)
 
     const isSelected = (id) => selected.indexOf(id) !== -1
 
     if (!data) return 'Loading...'
 
+    const rowCount = meta.itemsPerPage > meta.totalItems ? meta.totalItems : meta.itemsPerPage
+
     return (
         <>
             <Box sx={{ width: '100%' }}>
                 <Paper sx={{ width: '100%', mb: 2 }}>
-                    <ChainLogsTableToolbar numSelected={selected.length} onChangeTerm={onChangeTerm} />
+                    <ChainLogsTableToolbar
+                        numSelected={selected.length}
+                        onChangeTerm={onChangeTerm}
+                        selected={selected}
+                        setSelected={setSelected}
+                        refetch={refetch}
+                        filters={filters}
+                        handleFilter={handleFilter}
+                    />
                     <TableContainer>
+                        {loading && <LinearProgress />}
                         <Table sx={{ minWidth: 750 }} aria-labelledby='tableTitle' size='medium'>
                             <ChainLogsTableHead
                                 numSelected={selected.length}
@@ -72,7 +95,7 @@ export default function ChainLogsTable() {
                                 orderBy={sortBy}
                                 onSelectAllClick={handleSelectAllClick}
                                 onRequestSort={handleRequestSort}
-                                rowCount={meta.totalItems}
+                                rowCount={rowCount}
                             />
                             <TableBody>
                                 {!data.length && (
@@ -83,42 +106,18 @@ export default function ChainLogsTable() {
                                     </TableRow>
                                 )}
                                 {data.map((row, index) => {
-                                    const isItemSelected = isSelected(row.id)
-                                    const labelId = `enhanced-table-checkbox-${index}`
+                                    const isSelectedCurrent = isSelected(row.id)
                                     return (
-                                        <TableRow
-                                            hover
-                                            onClick={(event) => onClickRow(event, row)}
-                                            role='checkbox'
-                                            aria-checked={isItemSelected}
-                                            tabIndex={-1}
+                                        <ChainLogsTableRow
                                             key={row.id}
-                                            selected={isItemSelected}
-                                            sx={{ cursor: 'pointer' }}
-                                        >
-                                            <TableCell padding='checkbox'>
-                                                <Checkbox
-                                                    onClick={(event) => handleClick(event, row.id)}
-                                                    color='primary'
-                                                    checked={isItemSelected}
-                                                    inputProps={{
-                                                        'aria-labelledby': labelId
-                                                    }}
-                                                />
-                                            </TableCell>
-                                            <TableCell component='th' id={labelId} scope='row'>
-                                                {row?.chatflowName}
-                                            </TableCell>
-                                            <TableCell>{row?.question}</TableCell>
-                                            <TableCell>{row?.text}</TableCell>
-                                            <TableCell>{row?.chatId}</TableCell>
-                                            <TableCell>{moment(row?.createdDate).format('DD.MM.YYYY HH:MM')}</TableCell>
-                                            <TableCell>
-                                                <IconButton onClick={onHanleClickActions}>
-                                                    <MoreHorizIcon />
-                                                </IconButton>
-                                            </TableCell>
-                                        </TableRow>
+                                            row={row}
+                                            index={index}
+                                            onClickRow={onClickRow}
+                                            handleClick={handleClick}
+                                            isSelected={isSelectedCurrent}
+                                            refetch={refetch}
+                                            handleFilter={handleFilter}
+                                        />
                                     )
                                 })}
                             </TableBody>
@@ -138,6 +137,8 @@ export default function ChainLogsTable() {
             </Box>
 
             <ChainLogsDetails details={logDetails} onClose={onCloseDetailsWindow} />
+
+            <ConfirmDialog />
         </>
     )
 }

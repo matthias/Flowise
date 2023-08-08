@@ -27,13 +27,12 @@ const headCells = [
     },
     {
         id: 'Actions',
-        label: 'Actions'
+        label: ''
     }
 ]
 
 export function ChainLogsTableHead(props) {
     const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } = props
-
     return (
         <TableHead>
             <TableRow>
@@ -52,14 +51,11 @@ export function ChainLogsTableHead(props) {
                     const isSorting = headCell?.sortable
                     const isCurrent = orderBy === headCell.id
                     const isActive = Boolean(isCurrent && order)
+                    const direction = isCurrent ? order.toLowerCase() : 'asc'
                     return (
                         <TableCell key={headCell.id}>
                             {isSorting ? (
-                                <TableSortLabel
-                                    active={isActive}
-                                    direction={isCurrent ? order.toLowerCase() : 'ASC'}
-                                    onClick={() => onRequestSort(headCell.id)}
-                                >
+                                <TableSortLabel active={isActive} direction={direction} onClick={() => onRequestSort(headCell.id)}>
                                     {headCell?.label}
                                 </TableSortLabel>
                             ) : (
