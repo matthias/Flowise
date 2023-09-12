@@ -16,9 +16,9 @@ async function supabaseAuthMiddleware(req: Request, res: Response, next: NextFun
 
         if (!data.user) {
             return res.status(401).json({ message: 'User has not been authorized.' })
+        } else {
+            next()
         }
-
-        return next()
     } catch (error: any) {
         return res.status(401).json({ message: 'Credentials error.' })
     }
