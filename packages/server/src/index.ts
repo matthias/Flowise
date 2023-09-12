@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express'
+import express, { NextFunction, Request, Response } from 'express'
 import multer from 'multer'
 import path from 'path'
 import cors from 'cors'
@@ -57,6 +57,7 @@ import { Tool } from './entity/Tool'
 import { ChatflowPool } from './ChatflowPool'
 import { ICommonObject, INodeOptionsValue } from 'flowise-components'
 import { fork } from 'child_process'
+import supabaseAuthMiddleware from './utils/supabaseAuthMiddleware'
 
 export class App {
     app: express.Application
@@ -106,9 +107,11 @@ export class App {
         if (process.env.FLOWISE_USERNAME && process.env.FLOWISE_PASSWORD) {
             const username = process.env.FLOWISE_USERNAME
             const password = process.env.FLOWISE_PASSWORD
-            const basicAuthMiddleware = basicAuth({
-                users: { [username]: password }
-            })
+            // const basicAuthMiddleware = basicAuth({
+            //     users: { [username]: password }
+            // })
+            const basicAuthMiddleware = supabaseAuthMiddleware
+
             const whitelistURLs = [
                 '/api/v1/verify/apikey/',
                 '/api/v1/chatflows/apikey/',
