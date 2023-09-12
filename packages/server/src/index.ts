@@ -104,29 +104,29 @@ export class App {
         // Add the expressRequestLogger middleware to log all requests
         this.app.use(expressRequestLogger)
 
-        if (process.env.FLOWISE_USERNAME && process.env.FLOWISE_PASSWORD) {
-            const username = process.env.FLOWISE_USERNAME
-            const password = process.env.FLOWISE_PASSWORD
-            // const basicAuthMiddleware = basicAuth({
-            //     users: { [username]: password }
-            // })
-            const basicAuthMiddleware = supabaseAuthMiddleware
+        // if (process.env.FLOWISE_USERNAME && process.env.FLOWISE_PASSWORD) {
+        //     const username = process.env.FLOWISE_USERNAME
+        //     const password = process.env.FLOWISE_PASSWORD
+        /*** Basic Auth ***/
+        // const basicAuthMiddleware = basicAuth({
+        //     users: { [username]: password }
+        // })
 
-            const whitelistURLs = [
-                '/api/v1/verify/apikey/',
-                '/api/v1/chatflows/apikey/',
-                '/api/v1/public-chatflows',
-                '/api/v1/prediction/',
-                '/api/v1/node-icon/',
-                '/api/v1/components-credentials-icon/',
-                '/api/v1/chatflows-streaming'
-            ]
-            this.app.use((req, res, next) => {
-                if (req.url.includes('/api/v1/')) {
-                    whitelistURLs.some((url) => req.url.includes(url)) ? next() : basicAuthMiddleware(req, res, next)
-                } else next()
-            })
-        }
+        const whitelistURLs = [
+            '/api/v1/verify/apikey/',
+            '/api/v1/chatflows/apikey/',
+            '/api/v1/public-chatflows',
+            '/api/v1/prediction/',
+            '/api/v1/node-icon/',
+            '/api/v1/components-credentials-icon/',
+            '/api/v1/chatflows-streaming'
+        ]
+        this.app.use((req, res, next) => {
+            if (req.url.includes('/api/v1/')) {
+                whitelistURLs.some((url) => req.url.includes(url)) ? next() : supabaseAuthMiddleware(req, res, next)
+            } else next()
+        })
+        // }
 
         const upload = multer({ dest: `${path.join(__dirname, '..', 'uploads')}/` })
 
