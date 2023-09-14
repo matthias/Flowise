@@ -30,6 +30,7 @@ import { baseURL, maxScroll } from 'store/constant'
 
 import robotPNG from 'assets/images/robot.png'
 import userPNG from 'assets/images/account.png'
+import { isValidURL } from 'utils/genericHelper'
 
 export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const theme = useTheme()
@@ -57,6 +58,42 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const onSourceDialogClick = (data) => {
         setSourceDialogProps({ data })
         setSourceDialogOpen(true)
+    }
+
+    const onURLClick = (data) => {
+        window.open(data, '_blank')
+    }
+
+    const handleVectaraMetadata = (message) => {
+        if (message.sourceDocuments && message.sourceDocuments[0].metadata.length)
+            message.sourceDocuments = message.sourceDocuments.map((docs) => {
+                const newMetadata = docs.metadata.reduce((newMetadata, metadata) => {
+                    newMetadata[metadata.name] = metadata.value
+                    return newMetadata
+                }, {})
+                return {
+                    pageContent: docs.pageContent,
+                    metadata: newMetadata
+                }
+            })
+        return message
+    }
+
+    const removeDuplicateURL = (message) => {
+        const visitedURLs = []
+        const newSourceDocuments = []
+
+        message = handleVectaraMetadata(message)
+
+        message.sourceDocuments.forEach((source) => {
+            if (isValidURL(source.metadata.source) && !visitedURLs.includes(source.metadata.source)) {
+                visitedURLs.push(source.metadata.source)
+                newSourceDocuments.push(source)
+            } else if (!isValidURL(source.metadata.source)) {
+                newSourceDocuments.push(source)
+            }
+        })
+        return newSourceDocuments
     }
 
     const scrollToBottom = () => {
@@ -135,7 +172,10 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
             const response = await predictionApi.sendMessageAndGetPrediction(chatflowid, params)
 
             if (response.data) {
-                const data = response.data
+                let data = response.data
+
+                data = handleVectaraMetadata(data)
+
                 if (typeof data === 'object' && data.text && data.sourceDocuments) {
                     if (!isChatFlowAvailableToStream) {
                         setMessages((prevMessages) => [
@@ -319,17 +359,26 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                                             </div>
                                             {message.sourceDocuments && (
                                                 <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
-                                                    {message.sourceDocuments.map((source, index) => {
+                                                    {removeDuplicateURL(message).map((source, index) => {
+                                                        const URL = isValidURL(source.metadata.source)
                                                         return (
                                                             <Chip
                                                                 size='small'
                                                                 key={index}
-                                                                label={`${source.pageContent.substring(0, 15)}...`}
+                                                                label={
+                                                                    URL
+                                                                        ? URL.pathname.substring(0, 15) === '/'
+                                                                            ? URL.host
+                                                                            : `${URL.pathname.substring(0, 15)}...`
+                                                                        : `${source.pageContent.substring(0, 15)}...`
+                                                                }
                                                                 component='a'
                                                                 sx={{ mr: 1, mb: 1 }}
                                                                 variant='outlined'
                                                                 clickable
-                                                                onClick={() => onSourceDialogClick(source)}
+                                                                onClick={() =>
+                                                                    URL ? onURLClick(source.metadata.source) : onSourceDialogClick(source)
+                                                                }
                                                             />
                                                         )
                                                     })}

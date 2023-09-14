@@ -2,6 +2,8 @@
 
 # Contributing to Flowise
 
+English | [中文](./CONTRIBUTING-ZH.md)
+
 We appreciate any form of contributions.
 
 ## ⭐ Star
@@ -127,7 +129,6 @@ Flowise support different environment variables to configure your instance. You 
 | LOG_PATH                   | Location where log files are stored                                          | String                                           | `your-path/Flowise/logs`            |
 | LOG_LEVEL                  | Different levels of logs                                                     | Enum String: `error`, `info`, `verbose`, `debug` | `info`                              |
 | APIKEY_PATH                | Location where api keys are saved                                            | String                                           | `your-path/Flowise/packages/server` |
-| EXECUTION_MODE             | Whether predictions run in their own process or the main process             | Enum String: `child`, `main`                     | `main`                              |
 | TOOL_FUNCTION_BUILTIN_DEP  | NodeJS built-in modules to be used for Tool Function                         | String                                           |                                     |
 | TOOL_FUNCTION_EXTERNAL_DEP | External modules to be used for Tool Function                                | String                                           |                                     |
 | OVERRIDE_DATABASE          | Override current database with default                                       | Enum String: `true`, `false`                     | `true`                              |
@@ -154,10 +155,6 @@ npx flowise start --PORT=3000 --DEBUG=true
 ## 🏷️ Pull Request process
 
 A member of the FlowiseAI team will automatically be notified/assigned when you open a pull request. You can also reach out to us on [Discord](https://discord.gg/jbaHfsRVBW).
-
-## 📃 Contributor License Agreement
-
-Before we can merge your contribution you have to sign our [Contributor License Agreement (CLA)](https://cla-assistant.io/FlowiseAI/Flowise). The CLA contains the terms and conditions under which the contribution is submitted. You need to do this only once for your first pull request. Keep in mind that without a signed CLA we cannot merge your contribution.
 
 ## 📜 Code of Conduct
 

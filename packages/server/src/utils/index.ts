@@ -18,21 +18,37 @@ import {
     IComponentCredentials,
     ICredentialReqBody
 } from '../Interface'
-import { cloneDeep, get, omit, merge, isEqual } from 'lodash'
-import { ICommonObject, getInputVariables, IDatabaseEntity, handleEscapeCharacters } from 'flowise-components'
+import { cloneDeep, get, isEqual } from 'lodash'
+import {
+    ICommonObject,
+    getInputVariables,
+    IDatabaseEntity,
+    handleEscapeCharacters,
+    IMessage,
+    convertChatHistoryToText
+} from 'flowise-components'
 import { scryptSync, randomBytes, timingSafeEqual } from 'crypto'
 import { lib, PBKDF2, AES, enc } from 'crypto-js'
 
-import { ChatFlow } from '../entity/ChatFlow'
-import { ChatMessage } from '../entity/ChatMessage'
-import { Credential } from '../entity/Credential'
-import { Tool } from '../entity/Tool'
+import { ChatFlow } from '../database/entities/ChatFlow'
+import { ChatMessage } from '../database/entities/ChatMessage'
+import { Credential } from '../database/entities/Credential'
+import { Tool } from '../database/entities/Tool'
+import { ChainLog } from '../database/entities/ChainLog'
+
 import { DataSource } from 'typeorm'
 
 const QUESTION_VAR_PREFIX = 'question'
+const CHAT_HISTORY_VAR_PREFIX = 'chat_history'
 const REDACTED_CREDENTIAL_VALUE = '_FLOWISE_BLANK_07167752-1a71-43b1-bf8f-4f32252165db'
 
-export const databaseEntities: IDatabaseEntity = { ChatFlow: ChatFlow, ChatMessage: ChatMessage, Tool: Tool, Credential: Credential }
+export const databaseEntities: IDatabaseEntity = {
+    ChatFlow: ChatFlow,
+    ChatMessage: ChatMessage,
+    Tool: Tool,
+    Credential: Credential,
+    ChainLog: ChainLog
+}
 
 /**
  * Returns the home folder path of the user if
@@ -199,6 +215,7 @@ export const buildLangchain = async (
     depthQueue: IDepthQueue,
     componentNodes: IComponentNodes,
     question: string,
+    chatHistory: IMessage[],
     chatId: string,
     appDataSource: DataSource,
     overrideConfig?: ICommonObject
@@ -231,7 +248,7 @@ export const buildLangchain = async (
 
             let flowNodeData = cloneDeep(reactFlowNode.data)
             if (overrideConfig) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig)
-            const reactFlowNodeData: INodeData = resolveVariables(flowNodeData, flowNodes, question)
+            const reactFlowNodeData: INodeData = resolveVariables(flowNodeData, flowNodes, question, chatHistory)
 
             logger.debug(`[server]: Initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
             flowNodes[nodeIndex].data.instance = await newNodeInstance.init(reactFlowNodeData, question, {
@@ -315,7 +332,13 @@ export const clearSessionMemory = async (
  * @param {boolean} isAcceptVariable
  * @returns {string}
  */
-export const getVariableValue = (paramValue: string, reactFlowNodes: IReactFlowNode[], question: string, isAcceptVariable = false) => {
+export const getVariableValue = (
+    paramValue: string,
+    reactFlowNodes: IReactFlowNode[],
+    question: string,
+    chatHistory: IMessage[],
+    isAcceptVariable = false
+) => {
     let returnVal = paramValue
     const variableStack = []
     const variableDict = {} as IVariableDict
@@ -343,6 +366,10 @@ export const getVariableValue = (paramValue: string, reactFlowNodes: IReactFlowN
              */
             if (isAcceptVariable && variableFullPath === QUESTION_VAR_PREFIX) {
                 variableDict[`{{${variableFullPath}}}`] = handleEscapeCharacters(question, false)
+            }
+
+            if (isAcceptVariable && variableFullPath === CHAT_HISTORY_VAR_PREFIX) {
+                variableDict[`{{${variableFullPath}}}`] = handleEscapeCharacters(convertChatHistoryToText(chatHistory), false)
             }
 
             // Split by first occurrence of '.' to get just nodeId
@@ -375,38 +402,19 @@ export const getVariableValue = (paramValue: string, reactFlowNodes: IReactFlowN
 }
 
 /**
- * Temporarily disable streaming if vectorStore is Faiss
- * @param {INodeData} flowNodeData
- * @returns {boolean}
- */
-export const isVectorStoreFaiss = (flowNodeData: INodeData) => {
-    if (flowNodeData.inputs && flowNodeData.inputs.vectorStoreRetriever) {
-        const vectorStoreRetriever = flowNodeData.inputs.vectorStoreRetriever
-        if (typeof vectorStoreRetriever === 'string' && vectorStoreRetriever.includes('faiss')) return true
-        if (
-            typeof vectorStoreRetriever === 'object' &&
-            vectorStoreRetriever.vectorStore &&
-            vectorStoreRetriever.vectorStore.constructor.name === 'FaissStore'
-        )
-            return true
-    }
-    return false
-}
-
-/**
  * Loop through each inputs and resolve variable if neccessary
  * @param {INodeData} reactFlowNodeData
  * @param {IReactFlowNode[]} reactFlowNodes
  * @param {string} question
  * @returns {INodeData}
  */
-export const resolveVariables = (reactFlowNodeData: INodeData, reactFlowNodes: IReactFlowNode[], question: string): INodeData => {
+export const resolveVariables = (
+    reactFlowNodeData: INodeData,
+    reactFlowNodes: IReactFlowNode[],
+    question: string,
+    chatHistory: IMessage[]
+): INodeData => {
     let flowNodeData = cloneDeep(reactFlowNodeData)
-    if (reactFlowNodeData.instance && isVectorStoreFaiss(reactFlowNodeData)) {
-        // omit and merge because cloneDeep of instance gives "Illegal invocation" Exception
-        const flowNodeDataWithoutInstance = cloneDeep(omit(reactFlowNodeData, ['instance']))
-        flowNodeData = merge(flowNodeDataWithoutInstance, { instance: reactFlowNodeData.instance })
-    }
     const types = 'inputs'
 
     const getParamValues = (paramsObj: ICommonObject) => {
@@ -415,13 +423,13 @@ export const resolveVariables = (reactFlowNodeData: INodeData, reactFlowNodes: I
             if (Array.isArray(paramValue)) {
                 const resolvedInstances = []
                 for (const param of paramValue) {
-                    const resolvedInstance = getVariableValue(param, reactFlowNodes, question)
+                    const resolvedInstance = getVariableValue(param, reactFlowNodes, question, chatHistory)
                     resolvedInstances.push(resolvedInstance)
                 }
                 paramsObj[key] = resolvedInstances
             } else {
                 const isAcceptVariable = reactFlowNodeData.inputParams.find((param) => param.name === key)?.acceptVariable ?? false
-                const resolvedInstance = getVariableValue(paramValue, reactFlowNodes, question, isAcceptVariable)
+                const resolvedInstance = getVariableValue(paramValue, reactFlowNodes, question, chatHistory, isAcceptVariable)
                 paramsObj[key] = resolvedInstance
             }
         }
@@ -445,6 +453,15 @@ export const replaceInputsWithConfig = (flowNodeData: INodeData, overrideConfig:
 
     const getParamValues = (paramsObj: ICommonObject) => {
         for (const config in overrideConfig) {
+            // If overrideConfig[key] is object
+            if (overrideConfig[config] && typeof overrideConfig[config] === 'object') {
+                const nodeIds = Object.keys(overrideConfig[config])
+                if (nodeIds.includes(flowNodeData.id)) {
+                    paramsObj[config] = overrideConfig[config][flowNodeData.id]
+                    continue
+                }
+            }
+
             let paramValue = overrideConfig[config] ?? paramsObj[config]
             // Check if boolean
             if (paramValue === 'true') paramValue = true
@@ -466,12 +483,16 @@ export const replaceInputsWithConfig = (flowNodeData: INodeData, overrideConfig:
  * @param {IReactFlowNode[]} startingNodes
  * @returns {boolean}
  */
-export const isStartNodeDependOnInput = (startingNodes: IReactFlowNode[]): boolean => {
+export const isStartNodeDependOnInput = (startingNodes: IReactFlowNode[], nodes: IReactFlowNode[]): boolean => {
     for (const node of startingNodes) {
         for (const inputName in node.data.inputs) {
             const inputVariables = getInputVariables(node.data.inputs[inputName])
             if (inputVariables.length > 0) return true
         }
+    }
+    const whitelistNodeNames = ['vectorStoreToDocument', 'autoGPT']
+    for (const node of nodes) {
+        if (whitelistNodeNames.includes(node.data.name)) return true
     }
     return false
 }
@@ -695,6 +716,7 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[], component
             if (inputParam.type === 'file') {
                 obj = {
                     node: flowNode.data.label,
+                    nodeId: flowNode.data.id,
                     label: inputParam.label,
                     name: 'files',
                     type: inputParam.fileType ?? inputParam.type
@@ -702,6 +724,7 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[], component
             } else if (inputParam.type === 'options') {
                 obj = {
                     node: flowNode.data.label,
+                    nodeId: flowNode.data.id,
                     label: inputParam.label,
                     name: inputParam.name,
                     type: inputParam.options
@@ -720,6 +743,7 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[], component
                         for (const input of inputs) {
                             obj = {
                                 node: flowNode.data.label,
+                                nodeId: flowNode.data.id,
                                 label: input.label,
                                 name: input.name,
                                 type: input.type === 'password' ? 'string' : input.type
@@ -732,6 +756,7 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[], component
             } else {
                 obj = {
                     node: flowNode.data.label,
+                    nodeId: flowNode.data.id,
                     label: inputParam.label,
                     name: inputParam.name,
                     type: inputParam.type === 'password' ? 'string' : inputParam.type
@@ -775,11 +800,11 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
         isValidChainOrAgent = !blacklistChains.includes(endingNodeData.name)
     } else if (endingNodeData.category === 'Agents') {
         // Agent that are available to stream
-        const whitelistAgents = ['openAIFunctionAgent', 'csvAgent', 'airtableAgent']
+        const whitelistAgents = ['openAIFunctionAgent', 'csvAgent', 'airtableAgent', 'conversationalRetrievalAgent']
         isValidChainOrAgent = whitelistAgents.includes(endingNodeData.name)
     }
 
-    return isChatOrLLMsExist && isValidChainOrAgent && !isVectorStoreFaiss(endingNodeData) && process.env.EXECUTION_MODE !== 'child'
+    return isChatOrLLMsExist && isValidChainOrAgent
 }
 
 /**
@@ -861,12 +886,14 @@ export const decryptCredentialData = async (
  * @returns {Credential}
  */
 export const transformToCredentialEntity = async (body: ICredentialReqBody): Promise<Credential> => {
-    const encryptedData = await encryptCredentialData(body.plainDataObj)
-
-    const credentialBody = {
+    const credentialBody: ICommonObject = {
         name: body.name,
-        credentialName: body.credentialName,
-        encryptedData
+        credentialName: body.credentialName
+    }
+
+    if (body.plainDataObj) {
+        const encryptedData = await encryptCredentialData(body.plainDataObj)
+        credentialBody.encryptedData = encryptedData
     }
 
     const newCredential = new Credential()
@@ -895,4 +922,16 @@ export const redactCredentialWithPasswordType = (
         }
     }
     return plainDataObj
+}
+
+/**
+ * Replace sessionId with new chatId
+ * Ex: after clear chat history, use the new chatId as sessionId
+ * @param {any} instance
+ * @param {string} chatId
+ */
+export const checkMemorySessionId = (instance: any, chatId: string) => {
+    if (instance.memory && instance.memory.isSessionIdUsingChatMessageId && chatId) {
+        instance.memory.sessionId = chatId
+    }
 }

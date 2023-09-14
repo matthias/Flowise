@@ -14,7 +14,9 @@ export interface IChatFlow {
     deployed?: boolean
     isPublic?: boolean
     apikeyid?: string
+    analytic?: string
     chatbotConfig?: string
+    apiConfig?: any
 }
 
 export interface IChatMessage {
@@ -44,6 +46,16 @@ export interface ICredential {
     credentialName: string
     encryptedData: string
     updatedDate: Date
+    createdDate: Date
+}
+
+export interface IChainLog {
+    question: string
+    text: string
+    isInternal: boolean
+    chatflowId: string
+    chatflowName: string
+    result: JSON
     createdDate: Date
 }
 
@@ -157,6 +169,7 @@ export interface IActiveChatflows {
 
 export interface IOverrideConfig {
     node: string
+    nodeId: string
     label: string
     name: string
     type: string
@@ -166,19 +179,6 @@ export interface IDatabaseExport {
     chatmessages: IChatMessage[]
     chatflows: IChatFlow[]
     apikeys: ICommonObject[]
-}
-
-export interface IRunChatflowMessageValue {
-    chatflow: IChatFlow
-    chatId: string
-    incomingInput: IncomingInput
-    componentNodes: IComponentNodes
-    endingNodeData?: INodeData
-}
-
-export interface IChildProcessMessage {
-    key: string
-    value?: any
 }
 
 export type ICredentialDataDecrypted = ICommonObject
