@@ -6,6 +6,7 @@ import { ModifyTool1693997339912 } from './1693997339912-ModifyTool'
 import { AddApiConfig1694099183389 } from './1694099183389-AddApiConfig'
 import { AddAnalytic1694432361423 } from './1694432361423-AddAnalytic'
 import { AddChainLog1694609598769 } from './1694609598769-AddChainLog'
+import { AddProfile1695042861469 } from './1695042861469-AddProfile'
 
 export const postgresMigrations = [
     Init1693891895163,
@@ -15,5 +16,6 @@ export const postgresMigrations = [
     ModifyTool1693997339912,
     AddApiConfig1694099183389,
     AddAnalytic1694432361423,
-    AddChainLog1694609598769
+    AddChainLog1694609598769,
+    AddProfile1695042861469
 ]

@@ -74,8 +74,9 @@ export class App {
             .then(async () => {
                 logger.info('📦 [server]: Data Source has been initialized!')
 
+                // TODO: I guess we should run migration muanually
                 // Run Migrations Scripts
-                await this.AppDataSource.runMigrations({ transaction: 'each' })
+                // await this.AppDataSource.runMigrations({ transaction: 'each' })
 
                 // Initialize nodes pool
                 this.nodesPool = new NodesPool()
