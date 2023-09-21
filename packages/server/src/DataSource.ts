@@ -46,8 +46,8 @@ export const init = async (): Promise<void> => {
                 username: process.env.DATABASE_USER,
                 password: process.env.DATABASE_PASSWORD,
                 database: process.env.DATABASE_NAME,
-                synchronize: false,
-                migrationsRun: false,
+                synchronize: true,
+                migrationsRun: true,
                 entities: Object.values(entities),
                 migrations: postgresMigrations
             })
