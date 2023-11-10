@@ -34,10 +34,10 @@ import { ChatFlow } from '../database/entities/ChatFlow'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { Credential } from '../database/entities/Credential'
 import { Tool } from '../database/entities/Tool'
-import { ChainLog } from '../database/entities/ChainLog'
-
+import { Assistant } from '../database/entities/Assistant'
 import { DataSource } from 'typeorm'
 import { CachePool } from '../CachePool'
+import { ChainLog } from '../database/entities/ChainLog'
 
 const QUESTION_VAR_PREFIX = 'question'
 const CHAT_HISTORY_VAR_PREFIX = 'chat_history'
@@ -48,6 +48,7 @@ export const databaseEntities: IDatabaseEntity = {
     ChatMessage: ChatMessage,
     Tool: Tool,
     Credential: Credential,
+    Assistant: Assistant,
     ChainLog: ChainLog
 }
 
@@ -306,14 +307,14 @@ export const buildLangchain = async (
 }
 
 /**
- * Clear memory
+ * Clear all session memories on the canvas
  * @param {IReactFlowNode[]} reactFlowNodes
  * @param {IComponentNodes} componentNodes
  * @param {string} chatId
  * @param {DataSource} appDataSource
  * @param {string} sessionId
  */
-export const clearSessionMemory = async (
+export const clearAllSessionMemory = async (
     reactFlowNodes: IReactFlowNode[],
     componentNodes: IComponentNodes,
     chatId: string,
@@ -321,13 +322,52 @@ export const clearSessionMemory = async (
     sessionId?: string
 ) => {
     for (const node of reactFlowNodes) {
-        if (node.data.category !== 'Memory') continue
+        if (node.data.category !== 'Memory' && node.data.type !== 'OpenAIAssistant') continue
         const nodeInstanceFilePath = componentNodes[node.data.name].filePath as string
         const nodeModule = await import(nodeInstanceFilePath)
         const newNodeInstance = new nodeModule.nodeClass()
-        if (sessionId && node.data.inputs) node.data.inputs.sessionId = sessionId
-        if (newNodeInstance.clearSessionMemory)
+
+        if (sessionId && node.data.inputs) {
+            node.data.inputs.sessionId = sessionId
+        }
+
+        if (newNodeInstance.clearSessionMemory) {
             await newNodeInstance?.clearSessionMemory(node.data, { chatId, appDataSource, databaseEntities, logger })
+        }
+    }
+}
+
+/**
+ * Clear specific session memory from View Message Dialog UI
+ * @param {IReactFlowNode[]} reactFlowNodes
+ * @param {IComponentNodes} componentNodes
+ * @param {string} chatId
+ * @param {DataSource} appDataSource
+ * @param {string} sessionId
+ * @param {string} memoryType
+ */
+export const clearSessionMemoryFromViewMessageDialog = async (
+    reactFlowNodes: IReactFlowNode[],
+    componentNodes: IComponentNodes,
+    chatId: string,
+    appDataSource: DataSource,
+    sessionId?: string,
+    memoryType?: string
+) => {
+    if (!sessionId) return
+    for (const node of reactFlowNodes) {
+        if (node.data.category !== 'Memory' && node.data.type !== 'OpenAIAssistant') continue
+        if (memoryType && node.data.label !== memoryType) continue
+        const nodeInstanceFilePath = componentNodes[node.data.name].filePath as string
+        const nodeModule = await import(nodeInstanceFilePath)
+        const newNodeInstance = new nodeModule.nodeClass()
+
+        if (sessionId && node.data.inputs) node.data.inputs.sessionId = sessionId
+
+        if (newNodeInstance.clearSessionMemory) {
+            await newNodeInstance?.clearSessionMemory(node.data, { chatId, appDataSource, databaseEntities, logger })
+            return
+        }
     }
 }
 
@@ -812,7 +852,16 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
         isValidChainOrAgent = whitelistAgents.includes(endingNodeData.name)
     }
 
-    return isChatOrLLMsExist && isValidChainOrAgent
+    // If no output parser, flow is available to stream
+    let isOutputParserExist = false
+    for (const flowNode of reactFlowNodes) {
+        const data = flowNode.data
+        if (data.category.includes('Output Parser')) {
+            isOutputParserExist = true
+        }
+    }
+
+    return isChatOrLLMsExist && isValidChainOrAgent && !isOutputParserExist
 }
 
 /**
@@ -874,6 +923,8 @@ export const decryptCredentialData = async (
 ): Promise<ICredentialDataDecrypted> => {
     const encryptKey = await getEncryptionKey()
     const decryptedData = AES.decrypt(encryptedData, encryptKey)
+    const decryptedDataStr = decryptedData.toString(enc.Utf8)
+    if (!decryptedDataStr) return {}
     try {
         if (componentCredentialName && componentCredentials) {
             const plainDataObj = JSON.parse(decryptedData.toString(enc.Utf8))
@@ -936,8 +987,10 @@ export const redactCredentialWithPasswordType = (
  * @param {any} instance
  * @param {string} chatId
  */
-export const checkMemorySessionId = (instance: any, chatId: string) => {
+export const checkMemorySessionId = (instance: any, chatId: string): string => {
     if (instance.memory && instance.memory.isSessionIdUsingChatMessageId && chatId) {
         instance.memory.sessionId = chatId
+        instance.memory.chatHistory.sessionId = chatId
     }
+    return instance.memory ? instance.memory.sessionId ?? instance.memory.chatHistory.sessionId : undefined
 }
