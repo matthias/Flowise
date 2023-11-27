@@ -13,10 +13,16 @@
             "data": {
                 "id": "calculator_0",
                 "label": "Calculator",
-                "name": "calculator",
                 "version": 1,
+                "name": "calculator",
                 "type": "Calculator",
-                "baseClasses": ["Calculator", "Tool", "StructuredTool", "BaseLangChain", "Serializable"],
+                "baseClasses": [
+                    "Calculator",
+                    "Tool",
+                    "StructuredTool",
+                    "BaseLangChain",
+                    "Serializable"
+                ],
                 "category": "Tools",
                 "description": "Perform calculations on response",
                 "inputParams": [],
@@ -52,10 +58,14 @@
             "data": {
                 "id": "bufferMemory_0",
                 "label": "Buffer Memory",
-                "name": "bufferMemory",
                 "version": 1,
+                "name": "bufferMemory",
                 "type": "BufferMemory",
-                "baseClasses": ["BufferMemory", "BaseChatMemory", "BaseMemory"],
+                "baseClasses": [
+                    "BufferMemory",
+                    "BaseChatMemory",
+                    "BaseMemory"
+                ],
                 "category": "Memory",
                 "description": "Remembers previous conversational back and forths directly",
                 "inputParams": [
@@ -109,10 +119,14 @@
             "data": {
                 "id": "customTool_0",
                 "label": "Custom Tool",
-                "name": "customTool",
                 "version": 1,
+                "name": "customTool",
                 "type": "CustomTool",
-                "baseClasses": ["CustomTool", "Tool", "StructuredTool"],
+                "baseClasses": [
+                    "CustomTool",
+                    "Tool",
+                    "StructuredTool"
+                ],
                 "category": "Tools",
                 "description": "Use custom tool you've created in Flowise within chatflow",
                 "inputParams": [
@@ -158,10 +172,14 @@
             "data": {
                 "id": "serper_0",
                 "label": "Serper",
-                "name": "serper",
                 "version": 1,
+                "name": "serper",
                 "type": "Serper",
-                "baseClasses": ["Serper", "Tool", "StructuredTool"],
+                "baseClasses": [
+                    "Serper",
+                    "Tool",
+                    "StructuredTool"
+                ],
                 "category": "Tools",
                 "description": "Wrapper around Serper.dev - Google Search API",
                 "inputParams": [
@@ -169,7 +187,9 @@
                         "label": "Connect Credential",
                         "name": "credential",
                         "type": "credential",
-                        "credentialNames": ["serperApi"],
+                        "credentialNames": [
+                            "serperApi"
+                        ],
                         "id": "serper_0-input-credential-credential"
                     }
                 ],
@@ -205,10 +225,13 @@
             "data": {
                 "id": "openAIFunctionAgent_0",
                 "label": "OpenAI Function Agent",
+                "version": 2,
                 "name": "openAIFunctionAgent",
-                "version": 3,
                 "type": "AgentExecutor",
-                "baseClasses": ["AgentExecutor", "BaseChain"],
+                "baseClasses": [
+                    "AgentExecutor",
+                    "BaseChain"
+                ],
                 "category": "Agents",
                 "description": "An agent that uses OpenAI's Function Calling functionality to pick the tool and args to call",
                 "inputParams": [
@@ -244,7 +267,11 @@
                     }
                 ],
                 "inputs": {
-                    "tools": ["{{calculator_0.data.instance}}", "{{serper_0.data.instance}}", "{{customTool_0.data.instance}}"],
+                    "tools": [
+                        "{{calculator_0.data.instance}}",
+                        "{{serper_0.data.instance}}",
+                        "{{customTool_0.data.instance}}"
+                    ],
                     "memory": "{{bufferMemory_0.data.instance}}",
                     "model": "{{chatOpenAI_0.data.instance}}",
                     "systemMessage": ""
@@ -269,7 +296,7 @@
         },
         {
             "width": 300,
-            "height": 523,
+            "height": 574,
             "id": "chatOpenAI_0",
             "position": {
                 "x": 817.8210275868742,
@@ -279,10 +306,14 @@
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
-                "name": "chatOpenAI",
                 "version": 2,
+                "name": "chatOpenAI",
                 "type": "ChatOpenAI",
-                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
+                "baseClasses": [
+                    "ChatOpenAI",
+                    "BaseChatModel",
+                    "BaseLanguageModel"
+                ],
                 "category": "Chat Models",
                 "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
                 "inputParams": [
@@ -290,7 +321,9 @@
                         "label": "Connect Credential",
                         "name": "credential",
                         "type": "credential",
-                        "credentialNames": ["openAIApi"],
+                        "credentialNames": [
+                            "openAIApi"
+                        ],
                         "id": "chatOpenAI_0-input-credential-credential"
                     },
                     {
@@ -474,23 +507,23 @@
             }
         },
         {
-            "source": "chatOpenAI_0",
-            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
-            "target": "openAIFunctionAgent_0",
-            "targetHandle": "openAIFunctionAgent_0-input-model-BaseChatModel",
-            "type": "buttonedge",
-            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-openAIFunctionAgent_0-openAIFunctionAgent_0-input-model-BaseChatModel",
-            "data": {
-                "label": ""
-            }
-        },
-        {
             "source": "bufferMemory_0",
             "sourceHandle": "bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory",
             "target": "openAIFunctionAgent_0",
             "targetHandle": "openAIFunctionAgent_0-input-memory-BaseChatMemory",
             "type": "buttonedge",
             "id": "bufferMemory_0-bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory-openAIFunctionAgent_0-openAIFunctionAgent_0-input-memory-BaseChatMemory",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "chatOpenAI_0",
+            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
+            "target": "openAIFunctionAgent_0",
+            "targetHandle": "openAIFunctionAgent_0-input-model-ChatOpenAI | AzureChatOpenAI",
+            "type": "buttonedge",
+            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-openAIFunctionAgent_0-openAIFunctionAgent_0-input-model-ChatOpenAI | AzureChatOpenAI",
             "data": {
                 "label": ""
             }
