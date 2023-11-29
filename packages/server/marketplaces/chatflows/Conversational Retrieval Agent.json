@@ -17,10 +17,7 @@
                 "version": 1,
                 "name": "openAIEmbeddings",
                 "type": "OpenAIEmbeddings",
-                "baseClasses": [
-                    "OpenAIEmbeddings",
-                    "Embeddings"
-                ],
+                "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
                 "category": "Embeddings",
                 "description": "OpenAI API to generate embeddings for a given text",
                 "inputParams": [
@@ -28,9 +25,7 @@
                         "label": "Connect Credential",
                         "name": "credential",
                         "type": "credential",
-                        "credentialNames": [
-                            "openAIApi"
-                        ],
+                        "credentialNames": ["openAIApi"],
                         "id": "openAIEmbeddings_0-input-credential-credential"
                     },
                     {
@@ -106,11 +101,7 @@
                 "version": 3,
                 "name": "conversationalRetrievalAgent",
                 "type": "AgentExecutor",
-                "baseClasses": [
-                    "AgentExecutor",
-                    "BaseChain",
-                    "Runnable"
-                ],
+                "baseClasses": ["AgentExecutor", "BaseChain", "Runnable"],
                 "category": "Agents",
                 "description": "An agent optimized for retrieval during conversation, answering questions based on past dialogue, all using OpenAI's Function Calling",
                 "inputParams": [
@@ -146,9 +137,7 @@
                     }
                 ],
                 "inputs": {
-                    "tools": [
-                        "{{retrieverTool_0.data.instance}}"
-                    ],
+                    "tools": ["{{retrieverTool_0.data.instance}}"],
                     "memory": "{{bufferMemory_0.data.instance}}",
                     "model": "{{chatOpenAI_0.data.instance}}",
                     "systemMessage": ""
@@ -186,13 +175,7 @@
                 "version": 1,
                 "name": "retrieverTool",
                 "type": "RetrieverTool",
-                "baseClasses": [
-                    "RetrieverTool",
-                    "DynamicTool",
-                    "Tool",
-                    "StructuredTool",
-                    "Runnable"
-                ],
+                "baseClasses": ["RetrieverTool", "DynamicTool", "Tool", "StructuredTool", "Runnable"],
                 "category": "Tools",
                 "description": "Use a retriever as allowed tool for agent",
                 "inputParams": [
@@ -259,11 +242,7 @@
                 "version": 1,
                 "name": "bufferMemory",
                 "type": "BufferMemory",
-                "baseClasses": [
-                    "BufferMemory",
-                    "BaseChatMemory",
-                    "BaseMemory"
-                ],
+                "baseClasses": ["BufferMemory", "BaseChatMemory", "BaseMemory"],
                 "category": "Memory",
                 "description": "Remembers previous conversational back and forths directly",
                 "inputParams": [
@@ -320,11 +299,7 @@
                 "version": 1,
                 "name": "pinecone",
                 "type": "Pinecone",
-                "baseClasses": [
-                    "Pinecone",
-                    "VectorStoreRetriever",
-                    "BaseRetriever"
-                ],
+                "baseClasses": ["Pinecone", "VectorStoreRetriever", "BaseRetriever"],
                 "category": "Vector Stores",
                 "description": "Upsert embedded data and perform similarity search upon query using Pinecone, a leading fully managed hosted vector database",
                 "inputParams": [
@@ -332,9 +307,7 @@
                         "label": "Connect Credential",
                         "name": "credential",
                         "type": "credential",
-                        "credentialNames": [
-                            "pineconeApi"
-                        ],
+                        "credentialNames": ["pineconeApi"],
                         "id": "pinecone_0-input-credential-credential"
                     },
                     {
@@ -444,12 +417,7 @@
                 "version": 2,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
-                "baseClasses": [
-                    "ChatOpenAI",
-                    "BaseChatModel",
-                    "BaseLanguageModel",
-                    "Runnable"
-                ],
+                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
                 "category": "Chat Models",
                 "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
                 "inputParams": [
@@ -457,9 +425,7 @@
                         "label": "Connect Credential",
                         "name": "credential",
                         "type": "credential",
-                        "credentialNames": [
-                            "openAIApi"
-                        ],
+                        "credentialNames": ["openAIApi"],
                         "id": "chatOpenAI_0-input-credential-credential"
                     },
                     {
