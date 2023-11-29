@@ -676,9 +676,9 @@
             "source": "chatOpenAI_0",
             "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
             "target": "conversationalRetrievalAgent_0",
-            "targetHandle": "conversationalRetrievalAgent_0-input-model-ChatOpenAI | AzureChatOpenAI",
+            "targetHandle": "conversationalRetrievalAgent_0-input-model-BaseChatModel",
             "type": "buttonedge",
-            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-conversationalRetrievalAgent_0-conversationalRetrievalAgent_0-input-model-ChatOpenAI | AzureChatOpenAI",
+            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-conversationalRetrievalAgent_0-conversationalRetrievalAgent_0-input-model-BaseChatModel",
             "data": {
                 "label": ""
             }

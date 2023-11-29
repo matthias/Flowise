@@ -347,8 +347,8 @@
             "data": {
                 "id": "openAIFunctionAgent_0",
                 "label": "OpenAI Function Agent",
-                "version": 2,
                 "name": "openAIFunctionAgent",
+                "version": 3,
                 "type": "AgentExecutor",
                 "baseClasses": [
                     "AgentExecutor",

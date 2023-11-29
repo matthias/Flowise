@@ -14,6 +14,7 @@
                 "id": "calculator_0",
                 "label": "Calculator",
                 "version": 1,
+                "version": 1,
                 "name": "calculator",
                 "type": "Calculator",
                 "baseClasses": [
@@ -58,6 +59,7 @@
             "data": {
                 "id": "bufferMemory_0",
                 "label": "Buffer Memory",
+                "version": 1,
                 "version": 1,
                 "name": "bufferMemory",
                 "type": "BufferMemory",
@@ -121,6 +123,7 @@
                 "label": "Custom Tool",
                 "version": 1,
                 "name": "customTool",
+                "version": 1,
                 "type": "CustomTool",
                 "baseClasses": [
                     "CustomTool",
@@ -172,6 +175,7 @@
             "data": {
                 "id": "serper_0",
                 "label": "Serper",
+                "version": 1,
                 "version": 1,
                 "name": "serper",
                 "type": "Serper",
@@ -225,8 +229,8 @@
             "data": {
                 "id": "openAIFunctionAgent_0",
                 "label": "OpenAI Function Agent",
-                "version": 2,
                 "name": "openAIFunctionAgent",
+                "version": 3,
                 "type": "AgentExecutor",
                 "baseClasses": [
                     "AgentExecutor",
@@ -306,6 +310,7 @@
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
+                "version": 2,
                 "version": 2,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
@@ -529,4 +534,18 @@
             }
         }
     ]
+}
+},
+{
+"source": "chatOpenAI_0",
+"sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
+"target": "openAIFunctionAgent_0",
+"targetHandle": "openAIFunctionAgent_0-input-model-BaseChatModel",
+"type": "buttonedge",
+"id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-openAIFunctionAgent_0-openAIFunctionAgent_0-input-model-BaseChatModel",
+"data": {
+    "label": ""
+}
+}
+]
 }
