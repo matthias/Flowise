@@ -9,6 +9,8 @@ import { AddChainLog1694609598769 } from './1694609598769-AddChainLog'
 import { AddChatHistory1694658756136 } from './1694658756136-AddChatHistory'
 import { AddAssistantEntity1699325775451 } from './1699325775451-AddAssistantEntity'
 import { AddUsedToolsToChatMessage1699481607341 } from './1699481607341-AddUsedToolsToChatMessage'
+import { AddCategoryToChatFlow1699900910291 } from './1699900910291-AddCategoryToChatFlow'
+import { AddFileAnnotationsToChatMessage1700271021237 } from './1700271021237-AddFileAnnotationsToChatMessage'
 
 export const postgresMigrations = [
     Init1693891895163,
@@ -21,5 +23,7 @@ export const postgresMigrations = [
     AddChainLog1694609598769,
     AddChatHistory1694658756136,
     AddAssistantEntity1699325775451,
-    AddUsedToolsToChatMessage1699481607341
+    AddUsedToolsToChatMessage1699481607341,
+    AddCategoryToChatFlow1699900910291,
+    AddFileAnnotationsToChatMessage1700271021237
 ]
