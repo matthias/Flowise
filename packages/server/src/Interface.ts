@@ -75,6 +75,14 @@ export interface IChainLog {
     chatflowId: string
     chatflowName: string
     result: JSON
+}
+
+export interface IVariable {
+    id: string
+    name: string
+    value: string
+    type: string
+    updatedDate: Date
     createdDate: Date
 }
 
@@ -182,7 +190,7 @@ export interface IncomingInput {
 export interface IActiveChatflows {
     [key: string]: {
         startingNodes: IReactFlowNode[]
-        endingNodeData: INodeData
+        endingNodeData?: INodeData
         inSync: boolean
         overrideConfig?: ICommonObject
     }
