@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { getAllChainLogs } from 'api/chainlogs'
-import useApi from 'hooks/useApi'
+import { getAllChainLogs } from '@/api/chainlogs'
+import useApi from '@/hooks/useApi'
 
 export function useChainLogs({ pageSizes }) {
     const { data, loading, request } = useApi(getAllChainLogs)

@@ -4,9 +4,9 @@ import { ChainLogsTableHead } from './ChainLogsTableHead'
 import { ChainLogsTableToolbar } from './ChainLogsTableToolbar'
 import { ChainLogsDetails } from '../ChainLogsDetails'
 import { useChainLogs } from './useChainLogs'
-import { CustomPagination } from 'ui-component/pagination'
+import { CustomPagination } from '@/ui-component/pagination'
 import ChainLogsTableRow from './ChainLogsTableRow'
-import ConfirmDialog from 'ui-component/dialog/ConfirmDialog'
+import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 
 const PAGE_SIZES = [15, 25, 50]
 

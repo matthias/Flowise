@@ -1,10 +1,10 @@
 import { Button } from '@mui/material'
-import useConfirm from 'hooks/useConfirm'
-import { batchDeleteChainLogs } from 'api/chainlogs'
-import useApi from 'hooks/useApi'
+import useConfirm from '@/hooks/useConfirm'
+import { batchDeleteChainLogs } from '@/api/chainlogs'
+import useApi from '@/hooks/useApi'
 import { useDispatch } from 'react-redux'
-import useNotifier from 'utils/useNotifier'
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from 'store/actions'
+import useNotifier from '@/utils/useNotifier'
+import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 import { IconX } from '@tabler/icons'
 
 export default function useDeleteChainLogs({ refetch, selected, setSelected }) {

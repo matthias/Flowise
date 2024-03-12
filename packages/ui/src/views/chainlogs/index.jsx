@@ -1,6 +1,6 @@
 import { useSelector } from 'react-redux'
 import { Stack } from '@mui/material'
-import MainCard from 'ui-component/cards/MainCard'
+import MainCard from '@/ui-component/cards/MainCard'
 import { useTheme } from '@mui/material/styles'
 import ChainLogsTable from './ChainLogs'
 

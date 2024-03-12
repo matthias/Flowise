@@ -66,7 +66,18 @@ import { Assistant } from './database/entities/Assistant'
 import { ChatflowPool } from './ChatflowPool'
 import { CachePool } from './CachePool'
 import { ChainLog } from './database/entities/ChainLog'
-import { ICommonObject, IMessage, INodeOptionsValue, handleEscapeCharacters, webCrawl, xmlScrape } from 'flowise-components'
+import {
+    ICommonObject,
+    IMessage,
+    INodeOptionsValue,
+    INodeParams,
+    handleEscapeCharacters,
+    convertSpeechToText,
+    xmlScrape,
+    webCrawl,
+    getStoragePath,
+    IFileUpload
+} from 'flowise-components'
 import { createRateLimiter, getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
 import { getDataByQueries, prepareQueryParametersForLists } from './utils/queryHelpers'
 import { addAPIKey, compareKeys, deleteAPIKey, getApiKey, getAPIKeys, updateAPIKey } from './utils/apiKey'
@@ -2422,6 +2433,9 @@ let serverApp: App | undefined
 export async function getAllChatFlow(): Promise<IChatFlow[]> {
     return await getDataSource().getRepository(ChatFlow).find()
 }
+
+// const variables = await getDataSource().getRepository(Variable).find()
+// return res.json(variables)
 
 export async function start(): Promise<void> {
     serverApp = new App()

@@ -6,7 +6,7 @@ import { useState } from 'react'
 import useDeleteChainLogs from './useDeleteChainLogs'
 
 import { styled } from '@mui/material/styles'
-import ExpendableTextLine from 'ui-component/ExpendableTextLine'
+import ExpendableTextLine from '@/ui-component/ExpendableTextLine'
 
 export const StyledFilterButton = styled(ButtonBase)(({ theme }) => ({
     color: theme.palette.primary.main,

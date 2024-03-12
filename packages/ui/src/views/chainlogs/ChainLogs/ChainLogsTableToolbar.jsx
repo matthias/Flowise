@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 import { Toolbar, IconButton, Typography, Chip } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import PropTypes from 'prop-types'
-import { SearchingField } from 'ui-component/input/SearchField'
+import { SearchingField } from '@/ui-component/input/SearchField'
 import Grid from '@mui/material/Unstable_Grid2'
-import { useDebounce } from 'hooks/useDebounce'
+import { useDebounce } from '@/hooks/useDebounce'
 import useDeleteChainLogs from './useDeleteChainLogs'
 
 export function ChainLogsTableToolbar(props) {
