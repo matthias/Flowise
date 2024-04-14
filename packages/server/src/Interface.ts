@@ -84,15 +84,6 @@ export interface ICredential {
     createdDate: Date
 }
 
-// export interface IChainLog {
-//     question: string
-//     text: string
-//     isInternal: boolean
-//     chatflowId: string
-//     chatflowName: string
-//     result: JSON
-// }
-
 export interface IVariable {
     id: string
     name: string

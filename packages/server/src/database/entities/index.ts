@@ -1,4 +1,3 @@
-// import { ChainLog } from './ChainLog'
 import { ChatFlow } from './ChatFlow'
 import { ChatMessage } from './ChatMessage'
 import { ChatMessageFeedback } from './ChatMessageFeedback'
@@ -16,6 +15,5 @@ export const entities = {
     Tool,
     Assistant,
     Variable,
-    // ChainLog,
     UpsertHistory
 }

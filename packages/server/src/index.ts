@@ -149,33 +149,6 @@ export class App {
 
         this.app.use('/api/v1', flowiseApiV1Router)
 
-        // // Get all chain logs
-        // this.app.get('/api/v1/chain-logs', async (req: Request, res: Response) => {
-        //     try {
-        //         const { query } = req
-        //         const repository = this.AppDataSource.getRepository(ChainLog)
-
-        //         const queryParameters = prepareQueryParametersForLists(query)
-        //         const data = await getDataByQueries({ repository, ...queryParameters })
-
-        //         return res.status(200).json(data)
-        //     } catch (err: any) {
-        //         return res.status(500).send(err?.message)
-        //     }
-        // })
-
-        // // Batch delete hcain logs
-        // this.app.delete('/api/v1/chain-logs', async (req: Request, res: Response) => {
-        //     try {
-        //         const ids = req.body.ids
-        //         const userRepository = this.AppDataSource.getRepository(ChainLog)
-        //         await userRepository.delete(ids)
-        //         return res.status(200).send('The log records have been deleted successfully.')
-        //     } catch (error: any) {
-        //         return res.status(500).send(error?.message)
-        //     }
-        // })
-
         // ----------------------------------------
         // Serve UI static
         // ----------------------------------------
@@ -211,9 +184,6 @@ let serverApp: App | undefined
 export async function getAllChatFlow(): Promise<IChatFlow[]> {
     return await getDataSource().getRepository(ChatFlow).find()
 }
-
-// const variables = await getDataSource().getRepository(Variable).find()
-// return res.json(variables)
 
 export async function start(): Promise<void> {
     serverApp = new App()
