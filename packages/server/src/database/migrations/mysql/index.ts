@@ -5,7 +5,7 @@ import { ModifyCredential1693999261583 } from './1693999261583-ModifyCredential'
 import { ModifyTool1694001465232 } from './1694001465232-ModifyTool'
 import { AddApiConfig1694099200729 } from './1694099200729-AddApiConfig'
 import { AddAnalytic1694432361423 } from './1694432361423-AddAnalytic'
-import { AddChainLog1694609574842 } from './1694609574842-AddChainLog'
+// import { AddChainLog1694609574842 } from './1694609574842-AddChainLog'
 import { AddChatHistory1694658767766 } from './1694658767766-AddChatHistory'
 import { AddAssistantEntity1699325775451 } from './1699325775451-AddAssistantEntity'
 import { AddUsedToolsToChatMessage1699481607341 } from './1699481607341-AddUsedToolsToChatMessage'
@@ -14,6 +14,7 @@ import { AddFileAnnotationsToChatMessage1700271021237 } from './1700271021237-Ad
 import { AddFileUploadsToChatMessage1701788586491 } from './1701788586491-AddFileUploadsToChatMessage'
 import { AddVariableEntity1699325775451 } from './1702200925471-AddVariableEntity'
 import { AddSpeechToText1706364937060 } from './1706364937060-AddSpeechToText'
+import { AddUpsertHistoryEntity1709814301358 } from './1709814301358-AddUpsertHistoryEntity'
 import { AddFeedback1707213626553 } from './1707213626553-AddFeedback'
 
 export const mysqlMigrations = [
@@ -24,7 +25,7 @@ export const mysqlMigrations = [
     ModifyTool1694001465232,
     AddApiConfig1694099200729,
     AddAnalytic1694432361423,
-    AddChainLog1694609574842,
+    // AddChainLog1694609574842,
     AddChatHistory1694658767766,
     AddAssistantEntity1699325775451,
     AddUsedToolsToChatMessage1699481607341,
@@ -33,5 +34,6 @@ export const mysqlMigrations = [
     AddFileUploadsToChatMessage1701788586491,
     AddVariableEntity1699325775451,
     AddSpeechToText1706364937060,
+    AddUpsertHistoryEntity1709814301358,
     AddFeedback1707213626553
 ]

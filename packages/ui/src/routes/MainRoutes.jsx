@@ -26,7 +26,7 @@ const Credentials = Loadable(lazy(() => import('@/views/credentials')))
 const Variables = Loadable(lazy(() => import('@/views/variables')))
 
 // Chat logs
-const ChainLogs = Loadable(lazy(() => import('@/views/chainlogs')))
+// const ChainLogs = Loadable(lazy(() => import('@/views/chainlogs')))
 
 // ==============================|| MAIN ROUTING ||============================== //
 
@@ -66,10 +66,10 @@ const MainRoutes = {
             path: '/variables',
             element: <Variables />
         },
-        {
-            path: '/chain-logs',
-            element: <ChainLogs />
-        }
+        // {
+        //     path: '/chain-logs',
+        //     element: <ChainLogs />
+        // }
     ]
 }
 
