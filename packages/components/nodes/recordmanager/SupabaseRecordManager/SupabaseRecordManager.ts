@@ -138,13 +138,20 @@ class SupabaseRecordManager implements RecordManagerInterface {
 
     constructor(namespace: string, config: SupabaseRecordManagerOptions) {
         this.namespace = namespace
-        this.tableName = config.tableName ?? 'langchain_record_manager'
+        this.tableName = config.tableName || 'upsertion_records'
         this.supabase = config.client
         this.logger = config.logger ?? winston.createLogger()
     }
 
     async createSchema(): Promise<void> {
         const tableName = this.tableName
+
+        // use the Supabase API to check if the table exists
+        const { data: tableExists, error: sbError } = await this.supabase.rpc('has_table', { table_name: tableName })
+        if (sbError) {
+            console.error('Error fetching data:', sbError)
+            return
+        }
 
         const createTableSQL = `
             create table if not exists ${tableName} (
@@ -166,22 +173,34 @@ class SupabaseRecordManager implements RecordManagerInterface {
 
         const createFunctionSQL = `
             create or replace function get_server_timestamp()
-            returns double precision as $$
+                returns double precision as $$
             begin
-            return extract(epoch from current_timestamp);
+                return extract(epoch from current_timestamp);
             end; $$ language plpgsql;
         `
 
-        try {
-            await this.supabase.sql(createTableSQL)
+        if (!tableExists) {
+            // eslint-disable-next-line no-console
+            console.log(`
+                table ${tableName} is missing.
+                Execute the following SQL statement to create the table:
 
-            for (const sql of createIndexesSQL) {
-                await this.supabase.sql(sql)
-            }
+                ${createTableSQL}
 
-            await this.supabase.sql(createFunctionSQL)
-        } catch (error) {
-            console.error('Error creating schema:', error)
+            `)
+            createIndexesSQL.forEach((sql) => {
+                // eslint-disable-next-line no-console
+                console.log(`
+                    ${sql}
+                `)
+            })
+            // eslint-disable-next-line no-console
+            console.log(`
+                # SQL statement to create the get_server_timestamp function:
+
+                ${createFunctionSQL}
+            `)
+            return
         }
     }
 
