@@ -641,7 +641,7 @@ const _saveChunksToStorage = async (data: IDocumentStoreLoaderForPreview, entity
 
 // Get all component nodes
 const getDocumentLoaders = async () => {
-    const removeDocumentLoadersWithName = ['documentStore', 'vectorStoreToDocument', 'unstructuredFolderLoader', 'folderFiles']
+    const removeDocumentLoadersWithName = ['documentStore', 'vectorStoreToDocument', 'unstructuredFolderLoader'] // @Matt:2024-06-12:activated "Folder with Files" loader: , 'folderFiles'
 
     try {
         const dbResponse = await nodesService.getAllNodesForCategory('Document Loaders')
