@@ -3,6 +3,7 @@ import { Pinecone, PineconeConfiguration } from '@pinecone-database/pinecone'
 import { PineconeStoreParams, PineconeStore } from '@langchain/pinecone'
 import { Embeddings } from '@langchain/core/embeddings'
 import { Document } from '@langchain/core/documents'
+import { VectorStore } from '@langchain/core/vectorstores'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
@@ -48,7 +49,6 @@ class Pinecone_VectorStores implements INode {
         this.category = 'Vector Stores'
         this.description = `Upsert embedded data and perform similarity or mmr search using Pinecone, a leading fully managed hosted vector database`
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
-        this.badge = 'NEW'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -163,7 +163,7 @@ class Pinecone_VectorStores implements INode {
 
             try {
                 if (recordManager) {
-                    const vectorStore = await PineconeStore.fromExistingIndex(embeddings, obj)
+                    const vectorStore = (await PineconeStore.fromExistingIndex(embeddings, obj)) as unknown as VectorStore
                     await recordManager.createSchema()
                     const res = await index({
                         docsSource: finalDocs,
@@ -180,6 +180,45 @@ class Pinecone_VectorStores implements INode {
                 } else {
                     await PineconeStore.fromDocuments(finalDocs, embeddings, obj)
                     return { numAdded: finalDocs.length, addedDocs: finalDocs }
+                }
+            } catch (e) {
+                throw new Error(e)
+            }
+        },
+        async delete(nodeData: INodeData, ids: string[], options: ICommonObject): Promise<void> {
+            const _index = nodeData.inputs?.pineconeIndex as string
+            const pineconeNamespace = nodeData.inputs?.pineconeNamespace as string
+            const embeddings = nodeData.inputs?.embeddings as Embeddings
+            const pineconeTextKey = nodeData.inputs?.pineconeTextKey as string
+            const recordManager = nodeData.inputs?.recordManager
+
+            const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+            const pineconeApiKey = getCredentialParam('pineconeApiKey', credentialData, nodeData)
+
+            const client = getPineconeClient({ apiKey: pineconeApiKey })
+
+            const pineconeIndex = client.Index(_index)
+
+            const obj: PineconeStoreParams = {
+                pineconeIndex,
+                textKey: pineconeTextKey || 'text'
+            }
+
+            if (pineconeNamespace) obj.namespace = pineconeNamespace
+            const pineconeStore = new PineconeStore(embeddings, obj)
+
+            try {
+                if (recordManager) {
+                    const vectorStoreName = pineconeNamespace
+                    await recordManager.createSchema()
+                    ;(recordManager as any).namespace = (recordManager as any).namespace + '_' + vectorStoreName
+                    const keys: string[] = await recordManager.listKeys({})
+
+                    await pineconeStore.delete({ ids: keys })
+                    await recordManager.deleteKeys(keys)
+                } else {
+                    const pineconeStore = new PineconeStore(embeddings, obj)
+                    await pineconeStore.delete({ ids })
                 }
             } catch (e) {
                 throw new Error(e)
@@ -212,7 +251,7 @@ class Pinecone_VectorStores implements INode {
             obj.filter = metadatafilter
         }
 
-        const vectorStore = await PineconeStore.fromExistingIndex(embeddings, obj)
+        const vectorStore = (await PineconeStore.fromExistingIndex(embeddings, obj)) as unknown as VectorStore
 
         return resolveVectorStoreOrRetriever(nodeData, vectorStore, obj.filter)
     }

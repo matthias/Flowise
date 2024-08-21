@@ -1,3 +1,4 @@
+import { omit } from 'lodash'
 import { TextSplitter } from 'langchain/text_splitter'
 import { Document, DocumentInterface } from '@langchain/core/documents'
 import { BaseDocumentLoader } from 'langchain/document_loaders/base'
@@ -9,6 +10,8 @@ interface SpiderLoaderParameters {
     url: string
     apiKey?: string
     mode?: 'crawl' | 'scrape'
+    limit?: number
+    additionalMetadata?: Record<string, unknown>
     params?: Record<string, unknown>
 }
 
@@ -16,11 +19,13 @@ class SpiderLoader extends BaseDocumentLoader {
     private apiKey: string
     private url: string
     private mode: 'crawl' | 'scrape'
+    private limit?: number
+    private additionalMetadata?: Record<string, unknown>
     private params?: Record<string, unknown>
 
     constructor(loaderParams: SpiderLoaderParameters) {
         super()
-        const { apiKey, url, mode = 'crawl', params } = loaderParams
+        const { apiKey, url, mode = 'crawl', limit, additionalMetadata, params } = loaderParams
         if (!apiKey) {
             throw new Error('Spider API key not set. You can set it as SPIDER_API_KEY in your .env file, or pass it to Spider.')
         }
@@ -28,6 +33,8 @@ class SpiderLoader extends BaseDocumentLoader {
         this.apiKey = apiKey
         this.url = url
         this.mode = mode
+        this.limit = Number(limit)
+        this.additionalMetadata = additionalMetadata
         this.params = params
     }
 
@@ -42,6 +49,9 @@ class SpiderLoader extends BaseDocumentLoader {
             }
             spiderDocs = [response.data]
         } else if (this.mode === 'crawl') {
+            if (this.params) {
+                this.params.limit = this.limit
+            }
             const response = await app.crawlUrl(this.url, this.params)
             if (!response.success) {
                 throw new Error(`Spider: Failed to crawl URL. Error: ${response.error}`)
@@ -55,7 +65,10 @@ class SpiderLoader extends BaseDocumentLoader {
             (doc) =>
                 new Document({
                     pageContent: doc.content || '',
-                    metadata: { source: doc.url }
+                    metadata: {
+                        ...(this.additionalMetadata || {}),
+                        source: doc.url
+                    }
                 })
         )
     }
@@ -114,6 +127,20 @@ class Spider_DocumentLoaders implements INode {
                 placeholder: 'https://spider.cloud'
             },
             {
+                label: 'Limit',
+                name: 'limit',
+                type: 'number',
+                default: 25
+            },
+            {
+                label: 'Additional Metadata',
+                name: 'additional_metadata',
+                type: 'json',
+                description: 'Additional metadata to be added to the extracted documents',
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Additional Parameters',
                 name: 'params',
                 description:
@@ -122,6 +149,17 @@ class Spider_DocumentLoaders implements INode {
                 placeholder: '{ "anti_bot": true }',
                 type: 'json',
                 optional: true
+            },
+            {
+                label: 'Omit Metadata Keys',
+                name: 'omitMetadataKeys',
+                type: 'string',
+                rows: 4,
+                description:
+                    'Each document loader comes with a default set of metadata keys that are extracted from the document. You can use this field to omit some of the default metadata keys. The value should be a list of keys, seperated by comma. Use * to omit all metadata keys execept the ones you specify in the Additional Metadata field',
+                placeholder: 'key1, key2, key3.nestedKey1',
+                optional: true,
+                additionalParams: true
             }
         ]
         this.credential = {
@@ -136,16 +174,38 @@ class Spider_DocumentLoaders implements INode {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const url = nodeData.inputs?.url as string
         const mode = nodeData.inputs?.mode as 'crawl' | 'scrape'
+        const limit = nodeData.inputs?.limit as number
+        let additionalMetadata = nodeData.inputs?.additional_metadata
         let params = nodeData.inputs?.params || {}
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const spiderApiKey = getCredentialParam('spiderApiKey', credentialData, nodeData)
+        const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
+
+        let omitMetadataKeys: string[] = []
+        if (_omitMetadataKeys) {
+            omitMetadataKeys = _omitMetadataKeys.split(',').map((key) => key.trim())
+        }
 
         if (typeof params === 'string') {
             try {
                 params = JSON.parse(params)
             } catch (e) {
-                throw new Error('Invalid JSON string provided for params')
+                console.error('Invalid JSON string provided for params')
             }
+        }
+
+        if (additionalMetadata) {
+            if (typeof additionalMetadata === 'string') {
+                try {
+                    additionalMetadata = JSON.parse(additionalMetadata)
+                } catch (e) {
+                    console.error('Invalid JSON string provided for additional metadata')
+                }
+            } else if (typeof additionalMetadata !== 'object') {
+                console.error('Additional metadata must be a valid JSON object')
+            }
+        } else {
+            additionalMetadata = {}
         }
 
         // Ensure return_format is set to markdown
@@ -155,6 +215,8 @@ class Spider_DocumentLoaders implements INode {
             url,
             mode: mode as 'crawl' | 'scrape',
             apiKey: spiderApiKey,
+            limit: limit as number,
+            additionalMetadata: additionalMetadata as Record<string, unknown>,
             params: params as Record<string, unknown>
         }
 
@@ -167,6 +229,20 @@ class Spider_DocumentLoaders implements INode {
         } else {
             docs = await loader.load()
         }
+
+        docs = docs.map((doc: DocumentInterface) => ({
+            ...doc,
+            metadata:
+                _omitMetadataKeys === '*'
+                    ? additionalMetadata
+                    : omit(
+                          {
+                              ...doc.metadata,
+                              ...additionalMetadata
+                          },
+                          omitMetadataKeys
+                      )
+        }))
 
         return docs
     }
